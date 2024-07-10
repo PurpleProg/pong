@@ -27,19 +27,16 @@ class Game:
         }
 
         # create objects
-        self.ball = Ball(20, 20)
+        self.ball = Ball()
         self.paddle = Paddle()
         self.bricks = pygame.sprite.Group()
 
-
-        n_row = 16
-        n_col = 14
-        offset = 5
-        for y in range(n_row):
-            for x in range(n_col):
+        gap = 5
+        for y in range(16):
+            for x in range(14):
                 self.bricks.add(Brick(
-                    25 + offset*x + x*settings.BRICK_WIDTH, 
-                    10 + offset*y + y*settings.BRICK_HEIGHT
+                    25 + gap*x + x*settings.BRICK_WIDTH, 
+                    10 + gap*y + y*settings.BRICK_HEIGHT
                     ))
 
 
@@ -93,7 +90,7 @@ class Game:
 
     def udpate(self) -> None:
         self.paddle.update(self.keys)
-        self.ball.update(self.paddle)
+        self.ball.update(self.paddle, self.bricks)
         if self.check_game_over():
             self.game_over()
 

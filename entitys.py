@@ -3,45 +3,85 @@ import settings
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, init_x: int, init_y: int) -> None:
+    def __init__(self) -> None:
         super().__init__()
 
         self.speed: int = settings.BALL_SPEED
         self.direction: pygame.Vector2 = pygame.Vector2(1, 1)
-        self.pos: pygame.Vector2 = pygame.Vector2(init_x, init_y)
+        self.pos: pygame.Vector2 = pygame.Vector2(
+            settings.WIDTH/2 - 16/2,
+            settings.HEIGHT - settings.HEIGHT/6
+        )
 
         self.image: pygame.Surface = pygame.Surface(size=(16, 16))
         self.image.fill((255, 0, 0))
 
         self.rect: pygame.Rect = pygame.rect.Rect(self.pos.x, self.pos.y, 16, 16)
+        self.prev_rect = self.rect.copy()
 
 
-    def update(self, paddle) -> None:
+    def update(self, paddle, bricks) -> None:
         '''change the position of the ball'''
+
+        self.prev_rect.x = self.rect.x
         self.pos.x += self.speed * self.direction.x
-        self.pos.y += self.speed * self.direction.y
-
         self.rect.x = int(self.pos.x)
-        self.rect.y = int(self.pos.y) 
+        self.collide_x(paddle, bricks)
 
-        self.collide_walls()
-        self.collide_paddle(paddle)
+        self.prev_rect.y = self.rect.y
+        self.pos.y += self.speed * self.direction.y
+        self.rect.y = int(self.pos.y)
+        self.collide_y(paddle, bricks)
 
 
-    def collide_walls(self) -> None:
-        ''' check for collision whith the walls and update the direction'''
+    def collide_x(self, paddle, bricks) -> None:
+        # walls
         if self.pos.x < 0 or (self.pos.x+self.rect.width) > settings.WIDTH :
             self.direction.x *= -1
+
+        # paddle
+        if self.rect.colliderect(paddle.rect):
+            self.direction.x *= -1
+            if self.prev_rect.left > paddle.rect.right:
+                self.rect.left = paddle.rect.right
+            elif self.prev_rect.right < paddle.rect.left:
+                self.rect.right = paddle.rect.left
+
+        # bricks
+        for brick in bricks:
+            if brick.rect.colliderect(self.rect):
+                bricks.remove(brick)
+                self.direction.x *= -1
+                if self.prev_rect.left > brick.rect.right:
+                    self.rect.left = brick.rect.right
+                elif self.prev_rect.right < brick.rect.left:
+                    self.rect.right = brick.rect.left
+        
+
+    def collide_y(self, paddle, bricks) -> None:
+        # walls
         if self.pos.y < 0:
             self.direction.y *= -1
 
-
-    def collide_paddle(self, paddle) -> None:
-        # unexpected behaviour when collide from sides
-        # TODO: handle collisions depending on the place where the ball touch the paddel
+        # paddle
         if self.rect.colliderect(paddle.rect):
             self.direction.y *= -1
-    
+            self.rect.bottom = paddle.rect.top
+            if self.rect.centerx > paddle.rect.centerx:
+                self.direction.x = 1
+            else:
+                self.direction.x = -1
+
+        # bricks
+        for brick in bricks:
+            if brick.rect.colliderect(self.rect):
+                bricks.remove(brick)
+                self.direction.y *= -1
+                if self.prev_rect.top > brick.rect.bottom:
+                    self.rect.top = brick.rect.bottom
+                elif self.prev_rect.bottom < brick.rect.top:
+                    self.rect.bottom = brick.rect.top
+
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
@@ -53,7 +93,7 @@ class Paddle(pygame.sprite.Sprite):
         super().__init__()
 
         self.size: int = 150
-        self.speed: int = 5
+        self.speed: int = 6
         self.direction: int = 0
 
         self.pos: pygame.Vector2 = pygame.Vector2( ( (settings.WIDTH/2) -(self.size/2) ), settings.HEIGHT-settings.HEIGHT/10)  # center the paddle on x and 10% of height on y
