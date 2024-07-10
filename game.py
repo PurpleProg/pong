@@ -1,7 +1,7 @@
 import pygame
 import sys  # for proper exit
 import settings
-from entitys import Ball, Paddle
+from entitys import Ball, Paddle, Brick
 
 
 class Game:
@@ -29,6 +29,20 @@ class Game:
         # create objects
         self.ball = Ball(20, 20)
         self.paddle = Paddle()
+        self.bricks = pygame.sprite.Group()
+
+
+        n_row = 16
+        n_col = 14
+        offset = 5
+        for y in range(n_row):
+            for x in range(n_col):
+                self.bricks.add(Brick(
+                    20 + offset*(1+x) + x*settings.BRICK_WIDTH, 
+                    offset*(y+1) + y*settings.BRICK_HEIGHT
+                    ))
+
+
     
 
     def main_loop(self) -> None:
@@ -44,6 +58,7 @@ class Game:
                 case pygame.QUIT:
                     self.running = False
                     pygame.quit()
+                    sys.exit()
                 case pygame.KEYDOWN:
                     match event.key:
                         case pygame.K_ESCAPE:
@@ -89,6 +104,8 @@ class Game:
         '''draw stuff, update screen and limit FPS.'''
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
 
+        for brick in self.bricks:
+            brick.render(self.canvas)
         self.paddle.render(self.canvas)
         self.ball.render(self.canvas)
         self.display.blit(source=self.canvas, dest=(0, 0))

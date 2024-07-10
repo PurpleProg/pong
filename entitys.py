@@ -6,7 +6,7 @@ class Ball(pygame.sprite.Sprite):
     def __init__(self, init_x: int, init_y: int) -> None:
         super().__init__()
 
-        self.speed: int = 4
+        self.speed: int = settings.BALL_SPEED
         self.direction: pygame.Vector2 = pygame.Vector2(1, 1)
         self.pos: pygame.Vector2 = pygame.Vector2(init_x, init_y)
 
@@ -85,3 +85,18 @@ class Paddle(pygame.sprite.Sprite):
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
+
+
+class Brick(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y) -> None:
+        super().__init__()
+        self.pos: pygame.Vector2 = pygame.Vector2(pos_x, pos_y)
+        self.image: pygame.Surface = pygame.Surface((settings.BRICK_WIDTH, settings.BRICK_HEIGHT))
+        self.image.fill(settings.BRICK_COLOR)
+
+        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, settings.BRICK_WIDTH, settings.BRICK_HEIGHT)
+
+
+    def render(self, canvas) -> None:
+        canvas.blit(self.image, self.rect)
+
