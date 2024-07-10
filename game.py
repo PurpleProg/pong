@@ -1,7 +1,7 @@
 import pygame
 import sys  # for proper exit
 import settings
-from entitys import Ball, Paddle, Brick
+from states import Mainmenu
 
 
 class Game:
@@ -12,13 +12,17 @@ class Game:
         pygame.display.set_caption("Pong Game")
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
+        # init a stack
+        self.stack = []
+        menu = Mainmenu(self)
+        menu.enter_state()
 
         # init global game var
         self.running: bool = True
         self.clock = pygame.time.Clock()
         self.keys: dict[str, bool] = {
+            'ESCAPE': False,
             'RETURN': False,
-            'ENTER': False,
             'UP': False,
             'DOWN': False,
             'RIGHT': False,
@@ -26,20 +30,7 @@ class Game:
             'p': False,
         }
 
-        # create objects
-        self.ball = Ball()
-        self.paddle = Paddle()
-        self.bricks = pygame.sprite.Group()
-
-        gap = 5
-        for y in range(16):
-            for x in range(14):
-                self.bricks.add(Brick(
-                    25 + gap*x + x*settings.BRICK_WIDTH, 
-                    10 + gap*y + y*settings.BRICK_HEIGHT
-                    ))
-
-
+        
     def main_loop(self) -> None:
         self.event()
         self.udpate()
@@ -59,7 +50,7 @@ class Game:
                         case pygame.K_ESCAPE:
                             self.keys['ESCAPE'] = True
                         case pygame.K_RETURN:
-                            self.keys['ENTER'] = True
+                            self.keys['RETURN'] = True
                         case pygame.K_UP:
                             self.keys['UP'] = True
                         case pygame.K_DOWN:
@@ -75,7 +66,7 @@ class Game:
                         case pygame.K_ESCAPE:
                             self.keys['ESCAPE'] = False
                         case pygame.K_RETURN:
-                            self.keys['ENTER'] = False
+                            self.keys['RETURN'] = False
                         case pygame.K_UP:
                             self.keys['UP'] = False
                         case pygame.K_DOWN:
@@ -89,35 +80,14 @@ class Game:
                 
 
     def udpate(self) -> None:
-        self.paddle.update(self.keys)
-        self.ball.update(self.paddle, self.bricks)
-        if self.check_game_over():
-            self.game_over()
-
+        self.stack[-1].update()
+        
 
     def render(self) -> None:
         '''draw stuff, update screen and limit FPS.'''
-        self.canvas.fill(color=settings.BACKGROUND_COLOR)
 
-        for brick in self.bricks:
-            brick.render(self.canvas)
-        self.paddle.render(self.canvas)
-        self.ball.render(self.canvas)
+        self.stack[-1].render()
+
         self.display.blit(source=self.canvas, dest=(0, 0))
-
         pygame.display.flip()
         self.clock.tick(settings.FPS)
-
-
-    def check_game_over(self) -> bool:
-        ''' check the ball pos '''
-        if self.ball.pos.y > settings.HEIGHT:
-            return True
-        else:
-            return False
-    
-
-    def game_over(self) -> None:
-        self.running = False
-        pygame.quit()
-        sys.exit()
