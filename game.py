@@ -5,7 +5,7 @@ from entitys import Ball, Paddle
 
 
 class Game:
-    def __init__(self):
+    def __init__(self) -> None:
         # init pygame
         pygame.init()
         self.display = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
@@ -49,7 +49,7 @@ class Game:
                         case pygame.K_ESCAPE:
                             self.keys['ESCAPE'] = True
                         case pygame.K_RETURN:
-                            self.kays['ENTER'] = True
+                            self.keys['ENTER'] = True
                         case pygame.K_UP:
                             self.keys['UP'] = True
                         case pygame.K_DOWN:
@@ -65,7 +65,7 @@ class Game:
                         case pygame.K_ESCAPE:
                             self.keys['ESCAPE'] = False
                         case pygame.K_RETURN:
-                            self.kays['ENTER'] = False
+                            self.keys['ENTER'] = False
                         case pygame.K_UP:
                             self.keys['UP'] = False
                         case pygame.K_DOWN:
@@ -80,7 +80,7 @@ class Game:
 
     def udpate(self) -> None:
         self.paddle.update(self.keys)
-        self.ball.update()
+        self.ball.update(self.paddle)
         if self.check_game_over():
             self.game_over()
 

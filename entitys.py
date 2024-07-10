@@ -3,7 +3,7 @@ import settings
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, init_x: int, init_y: int):
+    def __init__(self, init_x: int, init_y: int) -> None:
         super().__init__()
 
         self.speed: int = 5
@@ -16,13 +16,13 @@ class Ball(pygame.sprite.Sprite):
         self.rect: pygame.Rect = pygame.rect.Rect(self.pos.x, self.pos.y, 16, 16)
 
 
-    def update(self) -> None:
+    def update(self, paddle: Paddle) -> None:
         '''change the position of the ball'''
         self.pos.x += self.speed * self.direction.x
         self.pos.y += self.speed * self.direction.y
 
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y 
+        self.rect.x = int(self.pos.x)
+        self.rect.y = int(self.pos.y) 
 
 
         # check for collision whith the walls
@@ -31,13 +31,14 @@ class Ball(pygame.sprite.Sprite):
         if self.pos.y < 0:
             self.direction.y *= -1
 
+        # check collision with the paddle
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
 
 class Paddle(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self) -> None:
         # only move on the x axis so some value are hard coded
         super().__init__()
 
@@ -69,7 +70,7 @@ class Paddle(pygame.sprite.Sprite):
         
 
         self.pos.x += self.speed * self.direction
-        self.rect.x = self.pos.x
+        self.rect.x = int(self.pos.x)
 
 
     def render(self, canvas: pygame.Surface) -> None:
