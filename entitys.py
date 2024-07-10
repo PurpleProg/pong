@@ -22,7 +22,15 @@ class Ball(pygame.sprite.Sprite):
         self.pos.y += self.speed * self.direction.y
 
         self.rect.x = self.pos.x
-        self.rect.y = self.pos.y        
+        self.rect.y = self.pos.y 
+
+
+        # check for collision whith the walls
+        if self.pos.x < 0 or (self.pos.x+self.rect.width) > settings.WIDTH :
+            self.direction.x *= -1
+        if self.pos.y < 0 or (self.pos.y+self.rect.height) > settings.HEIGHT :
+            self.direction.y *= -1
+        
 
 
     def render(self, canvas: pygame.Surface) -> None:
