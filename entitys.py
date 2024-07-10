@@ -28,9 +28,9 @@ class Ball(pygame.sprite.Sprite):
         # check for collision whith the walls
         if self.pos.x < 0 or (self.pos.x+self.rect.width) > settings.WIDTH :
             self.direction.x *= -1
-        if self.pos.y < 0 or (self.pos.y+self.rect.height) > settings.HEIGHT :
+        if self.pos.y < 0:
             self.direction.y *= -1
-        
+
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)

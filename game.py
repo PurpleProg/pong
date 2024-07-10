@@ -1,4 +1,5 @@
 import pygame
+import sys  # for proper exit
 import settings
 from entitys import Ball, Paddle
 
@@ -80,6 +81,8 @@ class Game:
     def udpate(self) -> None:
         self.paddle.update(self.keys)
         self.ball.update()
+        if self.check_game_over():
+            self.game_over()
 
 
     def render(self) -> None:
@@ -92,3 +95,17 @@ class Game:
 
         pygame.display.flip()
         self.clock.tick(settings.FPS)
+
+
+    def check_game_over(self) -> bool:
+        ''' check the ball pos '''
+        if self.ball.pos.y > settings.HEIGHT:
+            return True
+        else:
+            return False
+    
+
+    def game_over(self) -> None:
+        self.running = False
+        pygame.quit()
+        sys.exit()
