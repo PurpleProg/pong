@@ -1,5 +1,6 @@
 import pygame
 import settings
+from entitys import Ball
 
 
 class Game:
@@ -23,6 +24,9 @@ class Game:
             'LEFT': False,
             'p': False,
         }
+
+        # create objects
+        self.ball = Ball(20, 20)
     
     def main_loop(self) -> None:
         self.event()
@@ -71,11 +75,14 @@ class Game:
                 
 
     def udpate(self) -> None:
-        pass
+        self.ball.update()
 
     def render(self) -> None:
+        '''draw stuff, update screen and limit FPS.'''
+        self.canvas.fill(color=settings.BACKGROUND_COLOR)
 
-
+        self.ball.render(self.canvas)
         self.display.blit(source=self.canvas, dest=(0, 0))
+
         pygame.display.flip()
         self.clock.tick(settings.FPS)
