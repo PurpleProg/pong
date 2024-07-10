@@ -51,8 +51,18 @@ class Paddle(pygame.sprite.Sprite):
         self.image.fill((0, 0, 255))
     
 
-    def update(self) -> None:
+    def update(self, keys: dict[str ,bool]) -> None:
+
+        # move with arrows
+        if keys['RIGHT']:
+            self.direction = 1
+        elif keys['LEFT']:
+            self.direction = -1
+        else:
+            self.direction = 0
+
         self.pos.x += self.speed * self.direction
+        self.rect.x = self.pos.x
 
 
     def render(self, canvas: pygame.Surface) -> None:

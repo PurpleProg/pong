@@ -78,7 +78,7 @@ class Game:
                 
 
     def udpate(self) -> None:
-        self.paddle.update()
+        self.paddle.update(self.keys)
         self.ball.update()
 
 
