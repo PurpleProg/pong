@@ -38,12 +38,10 @@ class Game:
         for y in range(n_row):
             for x in range(n_col):
                 self.bricks.add(Brick(
-                    20 + offset*(1+x) + x*settings.BRICK_WIDTH, 
-                    offset*(y+1) + y*settings.BRICK_HEIGHT
+                    25 + offset*x + x*settings.BRICK_WIDTH, 
+                    10 + offset*y + y*settings.BRICK_HEIGHT
                     ))
 
-
-    
 
     def main_loop(self) -> None:
         self.event()
