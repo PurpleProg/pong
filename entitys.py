@@ -61,6 +61,13 @@ class Paddle(pygame.sprite.Sprite):
         else:
             self.direction = 0
 
+        # prevent paddle from going out of bouds
+        if self.rect.right > settings.WIDTH:
+            self.pos.x = settings.WIDTH-self.size
+        elif self.rect.left < 0:
+            self.pos.x = 0
+        
+
         self.pos.x += self.speed * self.direction
         self.rect.x = self.pos.x
 
