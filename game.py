@@ -1,6 +1,6 @@
 import pygame
 import settings
-from entitys import Ball
+from entitys import Ball, Paddle
 
 
 class Game:
@@ -27,11 +27,14 @@ class Game:
 
         # create objects
         self.ball = Ball(20, 20)
+        self.paddle = Paddle()
     
+
     def main_loop(self) -> None:
         self.event()
         self.udpate()
         self.render()
+
 
     def event(self) -> None:
         '''get event like keyboard press or mouse input and gather them in a dict'''
@@ -75,12 +78,15 @@ class Game:
                 
 
     def udpate(self) -> None:
+        self.paddle.update()
         self.ball.update()
+
 
     def render(self) -> None:
         '''draw stuff, update screen and limit FPS.'''
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
 
+        self.paddle.render(self.canvas)
         self.ball.render(self.canvas)
         self.display.blit(source=self.canvas, dest=(0, 0))
 
