@@ -23,65 +23,67 @@ class Ball(pygame.sprite.Sprite):
     def update(self, paddle, bricks) -> None:
         '''change the position of the ball'''
 
-        self.prev_rect.x = self.rect.x
         self.pos.x += self.speed * self.direction.x
-        self.rect.x = int(self.pos.x)
-        self.collide_x(paddle, bricks)
-
-        self.prev_rect.y = self.rect.y
         self.pos.y += self.speed * self.direction.y
+        self.rect.x = int(self.pos.x)
         self.rect.y = int(self.pos.y)
-        self.collide_y(paddle, bricks)
+
+        self.collide(paddle, bricks)
 
 
-    def collide_x(self, paddle, bricks) -> None:
+    def collide(self, paddle, bricks) -> None:
         # walls
-        if self.pos.x < 0 or (self.pos.x+self.rect.width) > settings.WIDTH :
+        if self.rect.left < 0 or self.rect.right > settings.WIDTH :
             self.direction.x *= -1
+        if self.rect.top < 0:
+            self.direction.y *= -1
+
 
         # paddle
         if self.rect.colliderect(paddle.rect):
-            self.direction.x *= -1
-            if self.prev_rect.left > paddle.rect.right:
-                self.rect.left = paddle.rect.right
-            elif self.prev_rect.right < paddle.rect.left:
-                self.rect.right = paddle.rect.left
-
-        # bricks
-        for brick in bricks:
-            if brick.rect.colliderect(self.rect):
-                bricks.remove(brick)
-                self.direction.x *= -1
-                if self.prev_rect.left > brick.rect.right:
-                    self.rect.left = brick.rect.right
-                elif self.prev_rect.right < brick.rect.left:
-                    self.rect.right = brick.rect.left
-        
-
-    def collide_y(self, paddle, bricks) -> None:
-        # walls
-        if self.pos.y < 0:
-            self.direction.y *= -1
-
-        # paddle
-        if self.rect.colliderect(paddle.rect):
-            self.direction.y *= -1
-            self.rect.bottom = paddle.rect.top
-            if self.rect.centerx > paddle.rect.centerx:
-                self.direction.x = 1
+            # X axis
+            if self.direction.x > 0:
+                delta_x = self.rect.right - paddle.rect.left
             else:
-                self.direction.x = -1
+                delta_x = paddle.rect.right - self.rect.left
+            # Y axis
+            if self.direction.y > 0:
+                delta_y = self.rect.bottom - paddle.rect.top
+            else: 
+                delta_y = paddle.rect.bottom - self.rect.top
+            # check incoming direction
+            if abs(delta_x - delta_y) < 10:   # corner (aproximation)
+                self.direction.x *= -1
+                self.direction.y *= -1
+            elif delta_x > delta_y:
+                self.direction.y *= -1
+            else:
+                self.direction.x *= -1
 
         # bricks
         for brick in bricks:
             if brick.rect.colliderect(self.rect):
                 bricks.remove(brick)
-                self.direction.y *= -1
-                if self.prev_rect.top > brick.rect.bottom:
-                    self.rect.top = brick.rect.bottom
-                elif self.prev_rect.bottom < brick.rect.top:
-                    self.rect.bottom = brick.rect.top
+                # X axis
+                if self.direction.x > 0:
+                    delta_x = self.rect.right - brick.rect.left
+                else:
+                    delta_x = brick.rect.right - self.rect.left
+                # Y axis
+                if self.direction.y > 0:
+                    delta_y = self.rect.bottom - brick.rect.top
+                else:
+                    delta_y = brick.rect.bottom - self.rect.top
+                # check incoming direction
+                if abs(delta_x - delta_y) < 10:   # corner (aproximation)
+                    self.direction.x *= -1
+                    self.direction.y *= -1
+                elif delta_x > delta_y:   # comming from the top of the block 
+                    self.direction.y *= -1
+                else:                      # comming from the sides
+                    self.direction.x *= -1
 
+        
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
