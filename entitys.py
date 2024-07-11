@@ -35,9 +35,14 @@ class Ball(pygame.sprite.Sprite):
         # walls
         if self.rect.left < 0 or self.rect.right > settings.WIDTH :
             self.direction.x *= -1
+            if self.rect.right > settings.WIDTH:   # prevent a bug where you can push the ball into the wall
+                self.rect.right = settings.WIDTH
+                self.direction.x = -1
+            elif self.rect.left < 0:
+                self.rect.left = 0
+                self.direction.x = 1
         if self.rect.top < 0:
             self.direction.y *= -1
-
 
         # paddle
         if self.rect.colliderect(paddle.rect):
@@ -56,7 +61,8 @@ class Ball(pygame.sprite.Sprite):
                 self.direction.x *= -1
                 self.direction.y *= -1
             elif delta_x > delta_y:
-                self.direction.y *= -1
+                self.direction.y = -1
+                self.rect.bottom = paddle.rect.top
             else:
                 self.direction.x *= -1
 
