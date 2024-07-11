@@ -130,6 +130,10 @@ class Pause(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill(settings.PAUSE_COLOR)
 
+        # init buttons
+        self.buttons = pygame.sprite.Group()
+        return_button = Button(self.game, 'return', self.buttons)
+
     
     def update(self) -> None:
         if self.game.keys['ESCAPE']:
@@ -138,4 +142,23 @@ class Pause(State):
 
 
     def render(self) -> None:
+        for button in self.buttons:
+            button.render(20, 20)
+
         self.game.canvas = self.canvas
+
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, game, text: str, group: pygame.sprite.Group) -> None:
+        super().__init__()
+        group.add(self)
+        self.game = game
+        self.text = text
+        self.highlight: bool = 0
+        self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
+        self.rect = self.image.get_rect()
+    
+
+    def render(self, pos_x: int, pos_y: int) -> None:
+        self.game.canvas.blit(self.image, dest=(pos_x, pos_y))
+

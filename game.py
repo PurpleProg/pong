@@ -8,6 +8,8 @@ class Game:
     def __init__(self) -> None:
         # init pygame
         pygame.init()
+        pygame.font.init()
+        self.font = pygame.font.SysFont('monospace', 20)
         self.display = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
         pygame.display.set_caption("Pong Game")
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
