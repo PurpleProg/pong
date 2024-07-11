@@ -9,7 +9,7 @@ class State:
     def __init__(self, game) -> None:
         self.game = game
     
-    def udpate(self) -> None:
+    def update(self) -> None:
         raise NotImplementedError
 
     def render(self) -> None:
@@ -49,7 +49,7 @@ class Gameplay(State):
         # create objects
         self.ball = Ball()
         self.paddle = Paddle()
-        self.bricks = pygame.sprite.Group()
+        self.bricks: pygame.sprite.Group = pygame.sprite.Group()
         # setup bricks
         gap = 5
         for y in range(16):
