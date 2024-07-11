@@ -7,7 +7,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 - [ ] improve assests (checkout on itch.io maybe)
 
-- [ ] pause screen
+- [x] pause screen
 
 - [ ] powerup (increase paddle size, create more balls)
 
@@ -39,6 +39,11 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] score
 - [ ] high score
 - [ ] time
+
+### pause screen :
+- [ ] back to game button
+- [ ] score
+- [ ] quit to mainmenu
 
 ### settings :
 - [ ] bindings

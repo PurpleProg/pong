@@ -47,7 +47,7 @@ class Gameplay(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
         # timer
-        self.countdown = settings.TIMER*settings.FPS   # 3 seconds
+        self.countdown = settings.COUNTDOWN*settings.FPS   # 3 seconds
 
         # create objects
         self.ball = Ball()
@@ -64,6 +64,12 @@ class Gameplay(State):
 
     
     def update(self) -> None:
+
+        # process keys press
+        if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
+            pause = Pause(self.game)
+            pause.enter_state()
 
         if self.countdown > 0:
             self.countdown -= 1
@@ -116,3 +122,109 @@ class Gameover(State):
     
     def render(self) -> None:
         self.game.canvas = self.canvas
+
+
+class Pause(State):
+    def __init__(self, game) -> None:
+        super().__init__(game)
+        self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.canvas.fill(settings.PAUSE_COLOR)
+
+        # init buttons
+        self.buttons: list[Button] = []
+        # dont forgot to set ONE button highlight
+        # the first button declared here is the bottom one, the last is on top.
+        menu_button = Button(self.game, 'menu', self.buttons, self.to_mainmenu)
+        settings_button = Button(self.game, 'settings', self.buttons, self.to_settings)
+        return_button = Button(self.game, 'return to game', self.buttons, self.exit_state, highlight=True)
+    
+
+    # fonctions to pass to the buttons
+    def to_mainmenu(self) -> None:
+        self.exit_state()
+        self.exit_state()
+    
+
+    def to_settings(self) -> None:
+        raise NotImplementedError
+
+    
+    def update(self) -> None:
+        if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False # prevent to go back in pause
+            self.exit_state()
+        
+        if self.game.keys['UP']:
+            self.game.keys['UP'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != len(self.buttons)-1:
+                        self.buttons[i+1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons
+                        # self.buttons[0].highlight = True
+                        # self.buttons[i].highlight = False
+                        pass
+        if self.game.keys['DOWN']:
+            self.game.keys['DOWN'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != 0:
+                        self.buttons[i-1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons (dont forgot the break it took me half an hour)
+                        # self.buttons[4].highlight = True
+                        # self.buttons[0].highlight = False
+                        # break
+                        pass
+        if self.game.keys['RETURN']:
+            self.game.keys['RETURN'] = False
+            # if there is multiple buttons highlighted, they are all called. That should'nt append but who knows
+            for button in self.buttons:
+                if button.highlight:
+                    button.fonction()
+                    break
+
+        for button in self.buttons:
+            button.update()   # update every text button if highlighted or not
+
+
+    def render(self) -> None:
+
+        self.canvas.fill(settings.PAUSE_COLOR)
+
+        for i, button in enumerate(self.buttons):
+            # center this shit is a pain in the ass
+            x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
+            y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
+            button.render(x, y)
+
+        self.game.canvas = self.canvas
+
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, game, text: str, group: list, fonction: callable, highlight: bool=False) -> None:
+        super().__init__()
+        group.append(self)
+        self.game = game
+        self.text = text
+        self.highlight: bool = highlight
+        self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.fonction = fonction
+    
+
+    def update(self) -> None:
+        if self.highlight:
+            self.image = self.game.font.render(('>'+self.text+'<'), False, color=(50, 50, 50))
+        else:
+            self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
+        self.rect = self.image.get_rect()
+
+
+    def render(self, pos_x: int, pos_y: int) -> None:
+        self.game.canvas.blit(self.image, dest=(pos_x, pos_y))
