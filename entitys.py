@@ -42,29 +42,17 @@ class Ball(pygame.sprite.Sprite):
                 self.rect.left = 0
                 self.direction.x = 1
         if self.rect.top < 0:
-            self.direction.y *= -1
+            self.rect.top = 0
+            self.direction.y = 1
 
         # paddle
         if self.rect.colliderect(paddle.rect):
-            # X axis
-            if self.direction.x > 0:
-                delta_x = self.rect.right - paddle.rect.left
+            self.rect.bottom = paddle.rect.top
+            self.direction.y = -1
+            if self.rect.center > paddle.rect.center:
+                self.direction.x = 1
             else:
-                delta_x = paddle.rect.right - self.rect.left
-            # Y axis
-            if self.direction.y > 0:
-                delta_y = self.rect.bottom - paddle.rect.top
-            else: 
-                delta_y = paddle.rect.bottom - self.rect.top
-            # check incoming direction
-            if abs(delta_x - delta_y) < 10:   # corner (aproximation)
-                self.direction.x *= -1
-                self.direction.y *= -1
-            elif delta_x > delta_y:
-                self.direction.y = -1
-                self.rect.bottom = paddle.rect.top
-            else:
-                self.direction.x *= -1
+                self.direction.x = -1
 
         # bricks
         for brick in bricks:
@@ -101,7 +89,7 @@ class Paddle(pygame.sprite.Sprite):
         super().__init__()
 
         self.size: int = 150
-        self.speed: int = 6
+        self.speed: int = settings.PADDLE_SPEED
         self.direction: int = 0
 
         self.pos: pygame.Vector2 = pygame.Vector2( ( (settings.WIDTH/2) -(self.size/2) ), settings.HEIGHT-settings.HEIGHT/10)  # center the paddle on x and 10% of height on y
