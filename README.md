@@ -41,9 +41,9 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] time
 
 ### pause screen :
-- [ ] back to game button
+- [x] back to game button
 - [ ] score
-- [ ] quit to mainmenu
+- [x] quit to mainmenu
 
 ### settings :
 - [ ] bindings
