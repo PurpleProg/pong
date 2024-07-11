@@ -47,7 +47,7 @@ class Gameplay(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
         # timer
-        self.countdown = settings.TIMER*settings.FPS   # 3 seconds
+        self.countdown = settings.COUNTDOWN*settings.FPS   # 3 seconds
 
         # create objects
         self.ball = Ball()
@@ -64,6 +64,12 @@ class Gameplay(State):
 
     
     def update(self) -> None:
+
+        # process keys press
+        if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
+            pause = Pause(self.game)
+            pause.enter_state()
 
         if self.countdown > 0:
             self.countdown -= 1
@@ -114,5 +120,22 @@ class Gameover(State):
             self.exit_state()
 
     
+    def render(self) -> None:
+        self.game.canvas = self.canvas
+
+
+class Pause(State):
+    def __init__(self, game) -> None:
+        super().__init__(game)
+        self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.canvas.fill(settings.PAUSE_COLOR)
+
+    
+    def update(self) -> None:
+        if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False # prevent to go back in pause
+            self.exit_state()
+
+
     def render(self) -> None:
         self.game.canvas = self.canvas
