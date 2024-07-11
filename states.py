@@ -29,14 +29,71 @@ class Mainmenu(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((0, 255, 255))   # yellow (i hope)  fuck it cyan works too
 
+        # init buttons
+        self.buttons: list = []
+        exit_button = Button(self.game, 'exit', self.buttons, self.exit_game)
+        play_button = Button(self.game, 'play', self.buttons, self.play, highlight=True)
+    
+
+    def exit_game(self) -> None:
+        pygame.quit()
+        sys.exit()
+    
+
+    def play(self) -> None:
+        gameplay = Gameplay(self.game)
+        gameplay.enter_state()
+
     
     def update(self) -> None:
+        if self.game.keys['UP']:
+            self.game.keys['UP'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != len(self.buttons)-1:
+                        self.buttons[i+1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons
+                        # self.buttons[0].highlight = True
+                        # self.buttons[i].highlight = False
+                        pass
+        if self.game.keys['DOWN']:
+            self.game.keys['DOWN'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != 0:
+                        self.buttons[i-1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons (dont forgot the break it took me half an hour)
+                        # self.buttons[4].highlight = True
+                        # self.buttons[0].highlight = False
+                        # break
+                        pass
         if self.game.keys['RETURN']:
-            gameplay = Gameplay(self.game)
-            gameplay.enter_state()
+            self.game.keys['RETURN'] = False
+            # if there is multiple buttons highlighted, they are all called. That should'nt append but who knows
+            for button in self.buttons:
+                if button.highlight:
+                    button.fonction()
+                    break
+
+        for button in self.buttons:
+            button.update()   # update every text button if highlighted or not
 
 
     def render(self) -> None:
+        self.canvas.fill('#00ffff')
+
+        for i, button in enumerate(self.buttons):
+            # center this shit is a pain in the ass
+            x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
+            y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
+            button.render(x, y)
+        
         self.game.canvas = self.canvas
 
 
