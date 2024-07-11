@@ -119,14 +119,17 @@ class Gameover(State):
         menu = Button(self.game, 'menu', self.buttons, self.to_menu)
         replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
 
+        # setup font
+        big_game_over_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
+        self.game_over_text_surf = big_game_over_font.render('GAME OVER', False, color=('#000000'))
+        
+
 
     def to_menu(self) -> None:
-        self.exit_state()  # back to gameplay
         self.exit_state()  # back to menu
 
 
     def replay(self) -> None:
-        self.exit_state()   # back to gameplay
         self.exit_state()   # back to menu
         gameplay = Gameplay(self.game)
         gameplay.enter_state()
@@ -178,14 +181,12 @@ class Gameover(State):
     def render(self) -> None:
         self.canvas.fill(("#ff0000"))
 
-        game_over_font = pygame.font.SysFont('monospace Bold', 80)
-
-        game_over_text_surf = game_over_font.render('GAME OVER', False, color=('#000000'))
-        self.canvas.blit(game_over_text_surf, dest=(
-            settings.WIDTH/2 - game_over_text_surf.get_rect().width/2, 
+        # blit the game over text
+        self.canvas.blit(self.game_over_text_surf, dest=(
+            settings.WIDTH/2 - self.game_over_text_surf.get_rect().width/2, 
             settings.HEIGHT/10
         ))
-
+        # blit the buttons
         for i, button in enumerate(self.buttons):
             # center this shit is a pain in the ass
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis

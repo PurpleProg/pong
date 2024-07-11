@@ -3,11 +3,12 @@
 FPS = 60
 COUNTDOWN = 0     # number of second before the gameplay start
 
-BACKGROUND_COLOR = (0, 0, 0)
+BACKGROUND_COLOR = ('#000000')  # to replace with assets
 PAUSE_COLOR = ('#ffff00')
 
 
-FONT_NAME = 'monospace'
+# default font. There also is a bold and a mono variant.
+FONT_NAME = 'font/PixeloidSans.tff'
 FONT_SIZE = 30
 
 # screen
