@@ -131,27 +131,69 @@ class Pause(State):
         self.canvas.fill(settings.PAUSE_COLOR)
 
         # init buttons
-        self.buttons = pygame.sprite.Group()
-        return_button = Button(self.game, 'return', self.buttons)
+        self.buttons: list[Button] = []
+        return_button = Button(self.game, '0', self.buttons)
+        menu_button = Button(self.game, '1', self.buttons)
+        menu_button.highlight = 1
+        menu_button = Button(self.game, '2', self.buttons)
+        menu_button = Button(self.game, '3', self.buttons)
+        menu_button = Button(self.game, '4', self.buttons)
 
     
     def update(self) -> None:
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False # prevent to go back in pause
             self.exit_state()
+        
+        if self.game.keys['UP']:
+            self.game.keys['UP'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != len(self.buttons)-1:
+                        self.buttons[i+1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons
+                        # self.buttons[0].highlight = True
+                        # self.buttons[i].highlight = False
+                        pass
+        if self.game.keys['DOWN']:
+            self.game.keys['DOWN'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != 0:
+                        self.buttons[i-1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons (dont forgot the break it took me half an hour)
+                        # self.buttons[4].highlight = True
+                        # self.buttons[0].highlight = False
+                        # break
+                        pass
+
+        for button in self.buttons:
+            button.update()   # update every text button if highlighted or not
 
 
     def render(self) -> None:
-        for button in self.buttons:
-            button.render(20, 20)
+
+        self.canvas.fill(settings.PAUSE_COLOR)
+
+        for i, button in enumerate(self.buttons):
+            # center this shit is a pain in the ass
+            x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
+            y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
+            button.render(x, y)
 
         self.game.canvas = self.canvas
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, game, text: str, group: pygame.sprite.Group) -> None:
+    def __init__(self, game, text: str, group: list) -> None:
         super().__init__()
-        group.add(self)
+        group.append(self)
         self.game = game
         self.text = text
         self.highlight: bool = 0
@@ -159,6 +201,13 @@ class Button(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
     
 
+    def update(self) -> None:
+        if self.highlight:
+            self.image = self.game.font.render(('>'+self.text+'<'), False, color=(0, 0, 0))
+        else:
+            self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
+        self.rect = self.image.get_rect()
+
+
     def render(self, pos_x: int, pos_y: int) -> None:
         self.game.canvas.blit(self.image, dest=(pos_x, pos_y))
-

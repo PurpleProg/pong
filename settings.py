@@ -7,6 +7,9 @@ BACKGROUND_COLOR = (0, 0, 0)
 PAUSE_COLOR = ('#ffff00')
 
 
+FONT_NAME = 'monospace'
+FONT_SIZE = 30
+
 # screen
 WIDTH = 1024
 HEIGHT = 512
