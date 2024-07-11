@@ -132,12 +132,21 @@ class Pause(State):
 
         # init buttons
         self.buttons: list[Button] = []
-        return_button = Button(self.game, '0', self.buttons)
-        menu_button = Button(self.game, '1', self.buttons)
-        menu_button.highlight = 1
-        menu_button = Button(self.game, '2', self.buttons)
-        menu_button = Button(self.game, '3', self.buttons)
-        menu_button = Button(self.game, '4', self.buttons)
+        # dont forgot to set ONE button highlight
+        # the first button declared here is the bottom one, the last is on top.
+        menu_button = Button(self.game, 'menu', self.buttons, self.to_mainmenu)
+        settings_button = Button(self.game, 'settings', self.buttons, self.to_settings)
+        return_button = Button(self.game, 'return to game', self.buttons, self.exit_state, highlight=True)
+    
+
+    # fonctions to pass to the buttons
+    def to_mainmenu(self) -> None:
+        self.exit_state()
+        self.exit_state()
+    
+
+    def to_settings(self) -> None:
+        raise NotImplementedError
 
     
     def update(self) -> None:
@@ -172,6 +181,13 @@ class Pause(State):
                         # self.buttons[0].highlight = False
                         # break
                         pass
+        if self.game.keys['RETURN']:
+            self.game.keys['RETURN'] = False
+            # if there is multiple buttons highlighted, they are all called. That should'nt append but who knows
+            for button in self.buttons:
+                if button.highlight:
+                    button.fonction()
+                    break
 
         for button in self.buttons:
             button.update()   # update every text button if highlighted or not
@@ -191,19 +207,20 @@ class Pause(State):
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, game, text: str, group: list) -> None:
+    def __init__(self, game, text: str, group: list, fonction: callable, highlight: bool=False) -> None:
         super().__init__()
         group.append(self)
         self.game = game
         self.text = text
-        self.highlight: bool = 0
+        self.highlight: bool = highlight
         self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
         self.rect = self.image.get_rect()
+        self.fonction = fonction
     
 
     def update(self) -> None:
         if self.highlight:
-            self.image = self.game.font.render(('>'+self.text+'<'), False, color=(0, 0, 0))
+            self.image = self.game.font.render(('>'+self.text+'<'), False, color=(50, 50, 50))
         else:
             self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
         self.rect = self.image.get_rect()
