@@ -114,13 +114,84 @@ class Gameover(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
+        # setup buttons
+        self.buttons: list = []
+        menu = Button(self.game, 'menu', self.buttons, self.to_menu)
+        replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
+
+
+    def to_menu(self) -> None:
+        self.exit_state()  # back to gameplay
+        self.exit_state()  # back to menu
+
+
+    def replay(self) -> None:
+        self.exit_state()   # back to gameplay
+        self.exit_state()   # back to menu
+        gameplay = Gameplay(self.game)
+        gameplay.enter_state()
+
 
     def update(self) -> None:
         if self.game.keys['ESCAPE']:
             self.exit_state()
+        
+        if self.game.keys['UP']:
+            self.game.keys['UP'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != len(self.buttons)-1:
+                        self.buttons[i+1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons
+                        # self.buttons[0].highlight = True
+                        # self.buttons[i].highlight = False
+                        pass
+        if self.game.keys['DOWN']:
+            self.game.keys['DOWN'] = False
+            for i in range(len(self.buttons)):
+                if self.buttons[i].highlight:
+                    if i != 0:
+                        self.buttons[i-1].highlight = True
+                        self.buttons[i].highlight = False
+                        break
+                    else:
+                        # uncomment these line to loop throug the buttons (dont forgot the break it took me half an hour)
+                        # self.buttons[4].highlight = True
+                        # self.buttons[0].highlight = False
+                        # break
+                        pass
+        if self.game.keys['RETURN']:
+            self.game.keys['RETURN'] = False
+            # if there is multiple buttons highlighted, they are all called. That should'nt append but who knows
+            for button in self.buttons:
+                if button.highlight:
+                    button.fonction()
+                    break
+
+        for button in self.buttons:
+            button.update()   # update every text button if highlighted or not
 
     
     def render(self) -> None:
+        self.canvas.fill(("#ff0000"))
+
+        game_over_font = pygame.font.SysFont('monospace Bold', 80)
+
+        game_over_text_surf = game_over_font.render('GAME OVER', False, color=('#000000'))
+        self.canvas.blit(game_over_text_surf, dest=(
+            settings.WIDTH/2 - game_over_text_surf.get_rect().width/2, 
+            settings.HEIGHT/10
+        ))
+
+        for i, button in enumerate(self.buttons):
+            # center this shit is a pain in the ass
+            x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
+            y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
+            button.render(x, y)
+
         self.game.canvas = self.canvas
 
 

@@ -31,9 +31,8 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### death screen
 - [ ] score
-- [ ] death button
-- [ ] replay button
-- [ ] menu button
+- [x] replay button
+- [x] menu button
 
 ### win screen
 - [ ] score
