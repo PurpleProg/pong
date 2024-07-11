@@ -1,7 +1,7 @@
 import pygame
 import sys  # for proper exit
 import settings
-from states import Mainmenu
+from states import Mainmenu, State
 
 
 class Game:
@@ -13,7 +13,7 @@ class Game:
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
         # init a stack
-        self.stack = []
+        self.stack: list[State] = []
         menu = Mainmenu(self)
         menu.enter_state()
 
