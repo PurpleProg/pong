@@ -1,6 +1,7 @@
 
 
 FPS = 60
+TIMER = 4     # number of second before the gameplay start
 
 BACKGROUND_COLOR = (0, 0, 0)
 

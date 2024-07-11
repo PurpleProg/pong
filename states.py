@@ -46,6 +46,9 @@ class Gameplay(State):
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
+        # timer
+        self.countdown = settings.TIMER*settings.FPS   # 3 seconds
+
         # create objects
         self.ball = Ball()
         self.paddle = Paddle()
@@ -61,10 +64,17 @@ class Gameplay(State):
 
     
     def update(self) -> None:
-        self.paddle.update(self.game.keys)
-        self.ball.update(self.paddle, self.bricks)
-        if self.check_game_over():
-            self.game_over()
+
+        if self.countdown > 0:
+            self.countdown -= 1
+            countdown_in_seconds = self.countdown/settings.FPS
+            if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
+                print(countdown_in_seconds)    # should re-use this in the UI somehow
+        else:
+            self.paddle.update(self.game.keys)
+            self.ball.update(self.paddle, self.bricks)
+            if self.check_game_over():
+                self.game_over()
     
 
     def render(self) -> None:

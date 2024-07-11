@@ -15,7 +15,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 - [ ] sounds
 
-- [ ] timer before ball start moving
+- [x] timer before ball start moving
 
 
    ### difficulties
