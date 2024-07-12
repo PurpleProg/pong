@@ -123,8 +123,8 @@ class Gameplay(State):
         self.bricks: pygame.sprite.Group = pygame.sprite.Group()
         # setup bricks
         gap = 5
-        for y in range(16 - 12):
-            for x in range(14 - 10):
+        for y in range(16):
+            for x in range(14):
                 self.bricks.add(Brick(
                     25 + gap*x + x*settings.BRICK_WIDTH, 
                     10 + gap*y + y*settings.BRICK_HEIGHT
