@@ -439,7 +439,12 @@ class Pause(State):
 
     def render(self) -> None:
 
-        self.canvas.fill(settings.PAUSE_COLOR)
+        self.canvas = self.game.stack[-2].canvas.copy()   # last state's canvas
+
+        self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.transparency.fill(settings.PAUSE_COLOR)
+        self.transparency.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
+        self.canvas.blit(self.transparency, dest=(0, 0))
 
         for i, button in enumerate(self.buttons):
             # center this shit is a pain in the ass
@@ -471,4 +476,4 @@ class Button(pygame.sprite.Sprite):
 
 
     def render(self, pos_x: int, pos_y: int) -> None:
-        self.game.canvas.blit(self.image, dest=(pos_x, pos_y))
+        self.game.stack[-1].canvas.blit(self.image, dest=(pos_x, pos_y))
