@@ -1,6 +1,7 @@
 import pygame
 import settings
 import sys  # for proper exit
+import time
 from entitys import Ball, Paddle, Brick
 
 
@@ -113,6 +114,7 @@ class Gameplay(State):
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.score = 0
+        self.start_time = time.time()
 
         # timer
         self.countdown = settings.COUNTDOWN*settings.FPS
@@ -173,7 +175,9 @@ class Gameplay(State):
 
     
     def win(self) -> None:
-        self.exit_state()
+        playtime = round(time.time() - self.start_time)
+        self.score -= playtime
+
         win = Win(self.game)
         win.enter_state()
 
@@ -187,7 +191,9 @@ class Gameplay(State):
     
 
     def game_over(self) -> None:
-        '''append game over state to the stack'''
+        '''append game over state to the stack and calc score based on time'''
+        playtime = round(time.time() - self.start_time)
+        self.score -= playtime
         gameoverstate = Gameover(self.game)
         gameoverstate.enter_state()
 
@@ -306,7 +312,8 @@ class Win(State):
 
 
     def to_menu(self) -> None:
-        self.exit_state()  # back to menu
+        self.exit_state()  # back to gameplay
+        self.exit_state() # back to menu
 
 
     def replay(self) -> None:
