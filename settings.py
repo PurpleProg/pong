@@ -8,7 +8,7 @@ PAUSE_COLOR = ('#ffff00')
 
 
 # default font. There also is a bold and a mono variant.
-FONT_NAME = 'font/PixeloidSans.tff'
+FONT_NAME = 'PixeloidSans.tff'
 FONT_SIZE = 30
 
 # screen
@@ -21,3 +21,4 @@ PADDLE_SPEED = 8
 BRICK_WIDTH = 64
 BRICK_HEIGHT = 16
 BRICK_COLOR = '#ff00ff'
+BRICK_SCORE = 10

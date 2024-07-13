@@ -11,7 +11,8 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] mouse support (maybe)
 - [ ] make the ball a circle (not a square wtf)
 - [ ] fix ball sideways paddle collision
-- [ ] the score system
+- [x] the score system
+- [ ] fix score timer in pause
 - [ ] powerup (increase paddle size, create more balls)
 - [ ] highscore save system (json ?)
 - [ ] sounds
@@ -31,12 +32,12 @@ the idea is to create a simple game but to focus on making it very well, with a 
    > _manu hehehe_
 
 ### death screen
-- [ ] score
+- [x] score
 - [x] replay button
 - [x] menu button
 
 ### win screen
-- [ ] score
+- [x] score
 - [ ] high score
 - [ ] time
 

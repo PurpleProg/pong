@@ -3,9 +3,10 @@ import settings
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self) -> None:
+    def __init__(self, game) -> None:
         super().__init__()
 
+        self.game = game
         self.speed: int = settings.BALL_SPEED
         self.direction: pygame.Vector2 = pygame.Vector2(1, 1)
         self.pos: pygame.Vector2 = pygame.Vector2(
@@ -58,6 +59,7 @@ class Ball(pygame.sprite.Sprite):
         for brick in bricks:
             if brick.rect.colliderect(self.rect):
                 bricks.remove(brick)
+                self.game.stack[-1].score += settings.BRICK_SCORE    # assuming that the ball is ONLY used from gameplay
                 # X axis
                 if self.direction.x > 0:
                     delta_x = self.rect.right - brick.rect.left
@@ -78,9 +80,9 @@ class Ball(pygame.sprite.Sprite):
                     self.direction.x *= -1
 
         
-
-    def render(self, canvas: pygame.Surface) -> None:
-        canvas.blit(self.image, self.rect)
+    def render(self) -> None:
+        '''blit itself to the last state on the stack'''
+        self.game.stack[-1].canvas.blit(self.image, self.rect)
 
 
 class Paddle(pygame.sprite.Sprite):
