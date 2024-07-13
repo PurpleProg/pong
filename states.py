@@ -114,7 +114,7 @@ class Gameplay(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
         # timer
-        self.countdown = settings.COUNTDOWN*settings.FPS   # 3 seconds
+        self.countdown = settings.COUNTDOWN*settings.FPS
 
         # create objects
         self.ball = Ball()
@@ -139,11 +139,11 @@ class Gameplay(State):
             pause.enter_state()
 
         # countdown befor start
-        if self.countdown > 0:
-            self.countdown -= 1
+        if self.countdown:
             countdown_in_seconds = self.countdown/settings.FPS
             if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
                 print(countdown_in_seconds)    # should re-use this in the UI somehow
+            self.countdown -= 1
         else:
             # main update thing whatever blablabla
             self.paddle.update(self.game.keys)
@@ -205,7 +205,6 @@ class Gameover(State):
         # setup font
         big_game_over_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
         self.game_over_text_surf = big_game_over_font.render('GAME OVER', False, color=('#000000'))
-        
 
 
     def to_menu(self) -> None:
