@@ -1,7 +1,7 @@
 
 
 FPS = 60
-COUNTDOWN = 0     # number of second before the gameplay start
+COUNTDOWN = 1     # number of second before the gameplay start
 
 BACKGROUND_COLOR = ('#000000')  # to replace with assets
 PAUSE_COLOR = ('#ffff00')

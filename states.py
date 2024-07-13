@@ -39,7 +39,6 @@ class Mainmenu(State):
         self.menu_text_surface = big_menu_font.render('MAIN MENU', False, color=('#000000'))
   
 
-
     def exit_game(self) -> None:
         pygame.quit()
         sys.exit()
@@ -187,8 +186,7 @@ class Gameplay(State):
     
 
     def game_over(self) -> None:
-        '''remove current state from stack and immedialty add a gameover instead'''
-        self.exit_state()
+        '''append game over state to the stack'''
         gameoverstate = Gameover(self.game)
         gameoverstate.enter_state()
 
@@ -211,11 +209,15 @@ class Gameover(State):
 
 
     def to_menu(self) -> None:
+        # stack :               mainmenu > gameplay > gameover
+        self.exit_state()  # back to gameplay
         self.exit_state()  # back to menu
 
 
     def replay(self) -> None:
-        self.exit_state()   # back to menu
+        # stack :               mainmenu > gameplay > gameover
+        self.exit_state()  # back to gameplay
+        self.exit_state()  # back to menu
         gameplay = Gameplay(self.game)
         gameplay.enter_state()
 
@@ -264,7 +266,13 @@ class Gameover(State):
 
     
     def render(self) -> None:
-        self.canvas.fill(("#ff0000"))
+
+        self.canvas = self.game.stack[-2].canvas.copy()   # last state's canvas
+
+        self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.transparency.fill(("#ff0000"))
+        self.transparency.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
+        self.canvas.blit(self.transparency, dest=(0, 0))
 
         # blit the game over text
         self.canvas.blit(self.game_over_text_surf, dest=(
