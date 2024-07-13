@@ -112,12 +112,13 @@ class Gameplay(State):
         super().__init__(game)
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.score = 0
 
         # timer
         self.countdown = settings.COUNTDOWN*settings.FPS
 
         # create objects
-        self.ball = Ball()
+        self.ball = Ball(self.game)
         self.paddle = Paddle()
         self.bricks: pygame.sprite.Group = pygame.sprite.Group()
         # setup bricks
@@ -159,7 +160,7 @@ class Gameplay(State):
         for brick in self.bricks:
             brick.render(self.canvas)
         self.paddle.render(self.canvas)
-        self.ball.render(self.canvas)
+        self.ball.render()
 
         self.game.canvas = self.canvas
 
