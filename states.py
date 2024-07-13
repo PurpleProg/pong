@@ -36,7 +36,7 @@ class Mainmenu(State):
         play_button = Button(self.game, 'play', self.buttons, self.play, highlight=True)
 
         # init font
-        big_menu_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
+        big_menu_font = pygame.font.Font('PixeloidSansBold.ttf', 80)
         self.menu_text_surface = big_menu_font.render('MAIN MENU', False, color=('#000000'))
   
 
@@ -138,8 +138,9 @@ class Gameplay(State):
         # process keys press
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
-            pause = Pause(self.game)
-            pause.enter_state()
+            # pause = Pause(self.game)
+            # pause.enter_state()   
+            self.win()
 
         # countdown befor start
         if self.countdown:
@@ -210,9 +211,9 @@ class Gameover(State):
         replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
-        self.game_over_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
+        self.game_over_font = pygame.font.Font ('PixeloidSansBold.ttf', 80)
         self.game_over_text_surf = self.game_over_font.render('GAME OVER', False, color=('#000000'))
-        self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
+        self.score_font = pygame.font.Font('PixeloidMono.ttf', 50)
 
         self.score_text_surf = self.score_font.render(f'score : {self.game.stack[-1].score}', False, color=('#000000'))
 
@@ -315,8 +316,11 @@ class Win(State):
         replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
-        win_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
-        self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))    
+        win_font = pygame.font.Font('PixeloidSansBold.ttf', 80)
+        self.score_win_font = pygame.font.Font('PixeloidSans.tff', 50)
+        self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
+
+        self.score_text_surf = self.score_win_font.render(f'score : {self.game.stack[-1].score}', False, color=('#000000'))
 
 
     def to_menu(self) -> None:
@@ -373,8 +377,13 @@ class Win(State):
             button.update()   # update every text button if highlighted or not
 
     
-    def render(self) -> None:
-        self.canvas.fill(("#00ff00"))
+    def render(self) -> None:    
+        self.canvas = self.game.stack[-2].canvas.copy()   # last state's canvas
+
+        self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.transparency.fill(("#00ff00"))
+        self.transparency.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
+        self.canvas.blit(self.transparency, dest=(0, 0))
 
         # blit the win !!! text
         self.canvas.blit(self.win_text_surface, dest=(
@@ -387,6 +396,11 @@ class Win(State):
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
             y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
             button.render(x, y)
+        # blit the score
+        self.canvas.blit(self.score_text_surf, dest=(
+            settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
+            settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
 
         self.game.canvas = self.canvas
 

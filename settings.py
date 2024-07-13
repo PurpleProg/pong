@@ -8,7 +8,7 @@ PAUSE_COLOR = ('#ffff00')
 
 
 # default font. There also is a bold and a mono variant.
-FONT_NAME = 'font/PixeloidSans.tff'
+FONT_NAME = 'PixeloidSans.tff'
 FONT_SIZE = 30
 
 # screen
