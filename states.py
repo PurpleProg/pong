@@ -210,8 +210,11 @@ class Gameover(State):
         replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
-        big_game_over_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
-        self.game_over_text_surf = big_game_over_font.render('GAME OVER', False, color=('#000000'))
+        self.game_over_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
+        self.game_over_text_surf = self.game_over_font.render('GAME OVER', False, color=('#000000'))
+        self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
+
+        self.score_text_surf = self.score_font.render(f'score : {self.game.stack[-1].score}', False, color=('#000000'))
 
 
     def to_menu(self) -> None:
@@ -291,6 +294,11 @@ class Gameover(State):
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
             y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
             button.render(x, y)
+        # blit the score
+        self.canvas.blit(self.score_text_surf, dest=(
+            settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
+            settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
 
         self.game.canvas = self.canvas
 
