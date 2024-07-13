@@ -23,14 +23,14 @@ class State:
 
 
 class Mainmenu(State):
-    def __init__(self, game):
+    def __init__(self, game) -> None:
         super().__init__(game)
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((0, 255, 255))   # yellow (i hope)  fuck it cyan works too
 
         # init buttons
-        self.buttons: list = []
+        self.buttons: list[Button] = list()
         exit_button = Button(self.game, 'exit', self.buttons, self.exit_game)
         play_button = Button(self.game, 'play', self.buttons, self.play, highlight=True)
 
@@ -94,14 +94,14 @@ class Mainmenu(State):
 
         # blit the MAIN MENU text
         self.canvas.blit(self.menu_text_surface, dest=(
-            settings.WIDTH/2 - self.menu_text_surface.get_rect().width/2, 
-            settings.HEIGHT/10
+            int(settings.WIDTH/2 - self.menu_text_surface.get_rect().width/2), 
+            int(settings.HEIGHT/10)
         ))
 
         for i, button in enumerate(self.buttons):
             # center this shit is a pain in the ass
-            x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
-            y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
+            x = int(settings.WIDTH/2 - button.rect.width/2)   # center button in X axis
+            y = int((settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height))
             button.render(x, y)
         
         self.game.canvas = self.canvas
@@ -164,7 +164,7 @@ class Gameplay(State):
         self.game.canvas = self.canvas
 
 
-    def check_win(self) -> None:
+    def check_win(self) -> bool:
         if len(self.bricks.sprites()) == 0:
             return True
         else:
@@ -455,22 +455,22 @@ class Pause(State):
 
         for i, button in enumerate(self.buttons):
             # center this shit is a pain in the ass
-            x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
-            y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
+            x = int(settings.WIDTH/2 - button.rect.width/2)   # center button in X axis
+            y = int((settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height))
             button.render(x, y)
 
         self.game.canvas = self.canvas
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, game, text: str, group: list, fonction: callable, highlight: bool=False) -> None:
+    def __init__(self, game, text: str, group: list, fonction, highlight: bool=False) -> None:
         super().__init__()
         group.append(self)
         self.game = game
         self.text = text
         self.highlight: bool = highlight
-        self.image = self.game.font.render(self.text, False, color=(0, 0, 0))
-        self.rect = self.image.get_rect()
+        self.image: pygame.Surface = self.game.font.render(self.text, False, color=(0, 0, 0))
+        self.rect: pygame.Rect = self.image.get_rect()
         self.fonction = fonction
     
 
