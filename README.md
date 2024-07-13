@@ -42,7 +42,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### pause screen :
 - [ ] maybe try a nested stack here for keeping track of the menus
-- [ ] transparent background
+- [x] transparent background
 - [ ] timer befor the ball moves
 - [x] back to game button
 - [ ] score
