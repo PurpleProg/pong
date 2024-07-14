@@ -38,7 +38,7 @@ class Game:
             with open('highscore', 'r') as highscore_file:
                 encoded_json: str = highscore_file.read()
                 decoded_json: str = base64.b64decode(encoded_json.encode()).decode()
-                self.highscore = decoded_json
+                self.highscore = json.loads(decoded_json)
         except FileNotFoundError:
             # if the file is not found, create it with hiscore 0
             with open('highscore', 'w') as highscore:

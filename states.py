@@ -7,10 +7,10 @@ import base64
 from entitys import Ball, Paddle, Brick
 
 
-def save(self) -> None:
+def save(score: dict[str, int]) -> None:
     ''' save the highscore to file '''
     score_data = {
-        'manu': self.prev_state.score
+        'manu': score
     }
     score_json: str = json.dumps(score_data)
     encoded_json: str = base64.b64encode(score_json.encode()).decode()
@@ -223,7 +223,7 @@ class Gameover(State):
         self.canvas.fill((255, 0, 0))
 
         if (self.prev_state.score > self.game.highscore['manu']):
-            save()
+            save(self.prev_state.score)
 
         # setup buttons
         self.buttons: list = []
@@ -336,7 +336,8 @@ class Win(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
-        save()
+        if self.prev_state.score > self.game.highscore['manu']:
+            save(self.prev_state.score)
 
         # setup buttons
         self.buttons: list = []
