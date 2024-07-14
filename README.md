@@ -40,8 +40,8 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### win screen
 - [x] score
-- [ ] high score
-- [ ] time
+- [x] high score
+- [x] time
 
 ### pause screen :
 - [x] transparent background
