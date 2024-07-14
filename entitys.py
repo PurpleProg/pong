@@ -97,7 +97,7 @@ class Paddle(pygame.sprite.Sprite):
 
         self.game = game
 
-        self.size: int = 150
+        self.size: int = settings.PADDLE_SIZE
         self.speed: int = settings.PADDLE_SPEED
         self.direction: int = 0
 
@@ -121,7 +121,10 @@ class Paddle(pygame.sprite.Sprite):
         for powerup in powerups:
             if self.rect.colliderect(powerup.rect):
                 powerup.powerup()
-                powerup.kill()
+                powerup.active = True
+                # not the cleanest way but it work
+                powerup.image.set_alpha(0)
+                powerup.rect.y = 0
 
         # prevent paddle from going out of bouds
         if self.rect.right > settings.WIDTH:
@@ -183,11 +186,40 @@ class Paddle_growup(Powerup):
     def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
         super().__init__(game, group, pos)
         self.image.fill('#00ffff')
+        self.active = False
+        self.countdown_in_frames = 3 * settings.FPS
+    
+    def update(self) -> None:
+        ''' overwrite for use a countdown '''
+        if not self.active:
+            self.rect.y += settings.POWERUP_SPEED
+            if self.rect.top > settings.HEIGHT:
+                self.kill()    # i feel bat about this poor guy
+        
+        if self.active:
+            self.countdown_in_frames -= 1
+            if self.countdown_in_frames < 0:
+                self.unpowerup()
+                self.kill()
+
 
     def powerup(self) -> None:
-        # add 20% to the paddle size
+        ''' add 20% to the paddle size '''
+        # center it
         self.game.stack[-1].paddle.rect.x -= self.game.stack[-1].paddle.rect.width * 0.1
         self.game.stack[-1].paddle.pos.x = self.game.stack[-1].paddle.rect.x
+        # make it bigger
         self.game.stack[-1].paddle.rect.width *= 1.2
+        # corect the image
+        self.game.stack[-1].paddle.image = pygame.Surface(size=(self.game.stack[-1].paddle.rect.width, self.game.stack[-1].paddle.rect.height))
+        self.game.stack[-1].paddle.image.fill(settings.PADDLE_COLOR)
+
+    def unpowerup(self) -> None: 
+        # change size
+        self.game.stack[-1].paddle.rect.width /= 1.2
+        # center
+        self.game.stack[-1].paddle.rect.x += self.game.stack[-1].paddle.rect.width * 0.1
+        self.game.stack[-1].paddle.pos.x = self.game.stack[-1].paddle.rect.x
+        # correct image
         self.game.stack[-1].paddle.image = pygame.Surface(size=(self.game.stack[-1].paddle.rect.width, self.game.stack[-1].paddle.rect.height))
         self.game.stack[-1].paddle.image.fill(settings.PADDLE_COLOR)
