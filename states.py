@@ -9,6 +9,8 @@ class State:
     ''' Blueprint of state for the stack'''
     def __init__(self, game) -> None:
         self.game = game
+        if len(self.game.stack):
+            self.prev_state = self.game.stack[-1]
     
     def update(self) -> None:
         raise NotImplementedError
@@ -32,8 +34,8 @@ class Mainmenu(State):
 
         # init buttons
         self.buttons: list[Button] = list()
-        exit_button = Button(self.game, 'exit', self.buttons, self.exit_game)
-        play_button = Button(self.game, 'play', self.buttons, self.play, highlight=True)
+        exit_button = Button(self.game, self, 'exit', self.buttons, self.exit_game)
+        play_button = Button(self.game, self, 'play', self.buttons, self.play, highlight=True)
 
         # init font
         big_menu_font = pygame.font.Font('PixeloidSansBold.ttf', 80)
@@ -114,6 +116,7 @@ class Gameplay(State):
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.score = 0
+        self.bricks_breaked = 0
         self.playtime_in_frames = 0
 
         # timer
@@ -140,9 +143,8 @@ class Gameplay(State):
         # process keys press
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
-            # pause = Pause(self.game)
-            # pause.enter_state()   
-            self.win()
+            pause = Pause(self.game)
+            pause.enter_state()   
 
         # countdown befor start
         if self.countdown:
@@ -158,7 +160,12 @@ class Gameplay(State):
                 self.game_over()
             if self.check_win():
                 self.win()
-    
+
+        # update score
+        playtime = self.playtime_in_frames / settings.FPS
+        self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
+        self.score = round(self.score)
+
 
     def render(self) -> None:
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
@@ -178,9 +185,6 @@ class Gameplay(State):
 
     
     def win(self) -> None:
-        playtime = int(self.playtime_in_frames / settings.FPS)
-        self.score -= playtime
-
         win = Win(self.game)
         win.enter_state()
 
@@ -195,8 +199,6 @@ class Gameplay(State):
 
     def game_over(self) -> None:
         '''append game over state to the stack and calc score based on time'''
-        playtime = int(self.playtime_in_frames / settings.FPS)
-        self.score -= playtime
         gameoverstate = Gameover(self.game)
         gameoverstate.enter_state()
 
@@ -209,15 +211,15 @@ class Gameover(State):
 
         # setup buttons
         self.buttons: list = []
-        menu = Button(self.game, 'menu', self.buttons, self.to_menu)
-        replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
+        menu = Button(self.game, self, 'menu', self.buttons, self.to_menu)
+        replay = Button(self.game, self, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
         self.game_over_font = pygame.font.Font ('PixeloidSansBold.ttf', 80)
         self.game_over_text_surf = self.game_over_font.render('GAME OVER', False, color=('#000000'))
         self.score_font = pygame.font.Font('PixeloidMono.ttf', 50)
 
-        self.score_text_surf = self.score_font.render(f'score : {self.game.stack[-1].score}', False, color=('#000000'))
+        self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
 
 
     def to_menu(self) -> None:
@@ -236,7 +238,13 @@ class Gameover(State):
 
     def update(self) -> None:
         if self.game.keys['ESCAPE']:
-            self.exit_state()
+            # if the escape key make the stack beeing used twice in a frame
+            # for exemple here from menu > gameplay > gameover
+            #                    to menu > gameplay > pause
+            # as it skips   menu > gameplay
+            # it unsync the stack and just breaks everything.
+            self.game.keys['ESCAPE'] = False
+            self.replay()
         
         if self.game.keys['UP']:
             self.game.keys['UP'] = False
@@ -279,7 +287,7 @@ class Gameover(State):
     
     def render(self) -> None:
 
-        self.canvas = self.game.stack[-2].canvas.copy()   # last state's canvas
+        self.canvas = self.prev_state.canvas.copy()   # last state's canvas
 
         self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.transparency.fill(("#ff0000"))
@@ -314,15 +322,15 @@ class Win(State):
 
         # setup buttons
         self.buttons: list = []
-        menu = Button(self.game, 'menu', self.buttons, self.to_menu)
-        replay = Button(self.game, 'replay', self.buttons, self.replay, highlight=True)
+        menu = Button(self.game, self,canvas, 'menu', self.buttons, self.to_menu)
+        replay = Button(self.game, self, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
         win_font = pygame.font.Font('PixeloidSansBold.ttf', 80)
         self.score_win_font = pygame.font.Font('PixeloidSans.tff', 50)
         self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
 
-        self.score_text_surf = self.score_win_font.render(f'score : {self.game.stack[-1].score}', False, color=('#000000'))
+        self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
 
 
     def to_menu(self) -> None:
@@ -337,9 +345,11 @@ class Win(State):
 
 
     def update(self) -> None:
-        if self.game.keys['ESCAPE']:
-            self.game.keys['ESCAPE'] = False
-            self.exit_state()
+
+        # this makes it act like a pause
+        # if self.game.keys['ESCAPE']:
+        #     self.game.keys['ESCAPE'] = False
+        #     self.exit_state()
         
         if self.game.keys['UP']:
             self.game.keys['UP'] = False
@@ -380,8 +390,8 @@ class Win(State):
             button.update()   # update every text button if highlighted or not
 
     
-    def render(self) -> None:    
-        self.canvas = self.game.stack[-2].canvas.copy()   # last state's canvas
+    def render(self) -> None:
+        self.canvas = self.prev_state.canvas.copy()   # last state's canvas
 
         self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.transparency.fill(("#00ff00"))
@@ -413,15 +423,19 @@ class Pause(State):
         super().__init__(game)
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill(settings.PAUSE_COLOR)
-
+        
         # init buttons
         self.buttons: list[Button] = []
         # dont forgot to set ONE button highlight
         # the first button declared here is the bottom one, the last is on top.
-        menu_button = Button(self.game, 'menu', self.buttons, self.to_mainmenu)
-        settings_button = Button(self.game, 'settings', self.buttons, self.to_settings)
-        return_button = Button(self.game, 'return to game', self.buttons, self.exit_state, highlight=True)
-    
+        menu_button = Button(self.game, self, 'menu', self.buttons, self.to_mainmenu)
+        settings_button = Button(self.game, self, 'settings', self.buttons, self.to_settings)
+        return_button = Button(self.game, self, 'return to game', self.buttons, self.exit_state, highlight=True)
+
+        # score
+        self.score_font = pygame.font.Font('PixeloidSans.tff', 50)
+        self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
+
 
     # fonctions to pass to the buttons
     def to_mainmenu(self) -> None:
@@ -479,27 +493,37 @@ class Pause(State):
 
     def render(self) -> None:
 
-        self.canvas = self.game.stack[-2].canvas.copy()   # last state's canvas
+        self.canvas = self.prev_state.canvas.copy()   # last state's canvas
 
+        # blit the transparent background
         self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.transparency.fill(settings.PAUSE_COLOR)
         self.transparency.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
         self.canvas.blit(self.transparency, dest=(0, 0))
 
+        # blit the buttons
         for i, button in enumerate(self.buttons):
             # center this shit is a pain in the ass
             x = int(settings.WIDTH/2 - button.rect.width/2)   # center button in X axis
             y = int((settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height))
             button.render(x, y)
+        
+        # blit the score
+        self.canvas.blit(self.score_text_surf, dest=(
+            settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
+            settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
 
         self.game.canvas = self.canvas
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, game, text: str, group: list, fonction, highlight: bool=False) -> None:
+    def __init__(self, game, state, text: str, group: list, fonction, highlight: bool=False) -> None:
+        ''' render on the given state '''
         super().__init__()
         group.append(self)
         self.game = game
+        self.state = state
         self.text = text
         self.highlight: bool = highlight
         self.image: pygame.Surface = self.game.font.render(self.text, False, color=(0, 0, 0))
@@ -516,4 +540,4 @@ class Button(pygame.sprite.Sprite):
 
 
     def render(self, pos_x: int, pos_y: int) -> None:
-        self.game.stack[-1].canvas.blit(self.image, dest=(pos_x, pos_y))
+        self.state.canvas.blit(self.image, dest=(pos_x, pos_y))
