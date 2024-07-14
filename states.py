@@ -120,7 +120,7 @@ class Gameplay(State):
         self.playtime_in_frames = 0
 
         # timer
-        self.countdown = settings.COUNTDOWN*settings.FPS
+        self.countdown_in_frames = settings.COUNTDOWN*settings.FPS
 
         # create objects
         self.ball = Ball(self.game)
@@ -147,11 +147,11 @@ class Gameplay(State):
             pause.enter_state()   
 
         # countdown befor start
-        if self.countdown:
-            countdown_in_seconds = self.countdown/settings.FPS
+        if self.countdown_in_frames:
+            countdown_in_seconds = self.countdown_in_frames/settings.FPS
             if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
                 print(countdown_in_seconds)    # should re-use this in the UI somehow
-            self.countdown -= 1
+            self.countdown_in_frames -= 1
         else:
             # main update thing whatever blablabla
             self.paddle.update(self.game.keys)
@@ -430,7 +430,7 @@ class Pause(State):
         # the first button declared here is the bottom one, the last is on top.
         menu_button = Button(self.game, self, 'menu', self.buttons, self.to_mainmenu)
         settings_button = Button(self.game, self, 'settings', self.buttons, self.to_settings)
-        return_button = Button(self.game, self, 'return to game', self.buttons, self.exit_state, highlight=True)
+        return_button = Button(self.game, self, 'return to game', self.buttons, self.resume, highlight=True)
 
         # score
         self.score_font = pygame.font.Font('font/PixeloidSans.ttf', 50)
@@ -438,6 +438,11 @@ class Pause(State):
 
 
     # fonctions to pass to the buttons
+    def resume(self) -> None:
+        self.prev_state.countdown_in_frames = settings.COUNTDOWN*settings.FPS
+        self.exit_state()
+
+
     def to_mainmenu(self) -> None:
         self.exit_state()
         self.exit_state()
@@ -450,7 +455,7 @@ class Pause(State):
     def update(self) -> None:
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False # prevent to go back in pause
-            self.exit_state()
+            self.resume()
         
         if self.game.keys['UP']:
             self.game.keys['UP'] = False
