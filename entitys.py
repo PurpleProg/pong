@@ -1,5 +1,6 @@
 import pygame
 import settings
+import random
 
 
 class Ball(pygame.sprite.Sprite):
@@ -19,7 +20,7 @@ class Ball(pygame.sprite.Sprite):
         pygame.draw.circle(self.image, settings.BALL_COLOR, (settings.BALL_RADIUS, settings.BALL_RADIUS), settings.BALL_RADIUS, width=settings.BALL_RADIUS)
  
 
-    def update(self, paddle, bricks) -> None:
+    def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         '''change the position of the ball'''
 
         self.pos.x += self.speed * self.direction.x
@@ -27,10 +28,10 @@ class Ball(pygame.sprite.Sprite):
         self.rect.x = int(self.pos.x)
         self.rect.y = int(self.pos.y)
 
-        self.collide(paddle, bricks)
+        self.collide(paddle, bricks, powerups)
 
 
-    def collide(self, paddle, bricks) -> None:
+    def collide(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         # walls
         if self.rect.left < 0 or self.rect.right > settings.WIDTH :
             self.direction.x *= -1
@@ -56,6 +57,13 @@ class Ball(pygame.sprite.Sprite):
         # bricks
         for brick in bricks:
             if brick.rect.colliderect(self.rect):
+                # spawn powerup
+                match random.randint(0, 20):
+                    case 1:
+                        p = Paddle_growup(self.game, powerups, brick.rect.center)
+                    case 2:
+                        p = Powerup(self.game, powerups, brick.rect.center)
+
                 bricks.remove(brick)
                 self.game.stack[-1].bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
                 # X axis
@@ -78,15 +86,16 @@ class Ball(pygame.sprite.Sprite):
                     self.direction.x *= -1
 
         
-    def render(self) -> None:
-        '''blit itself to the last state on the stack'''
-        self.game.stack[-1].canvas.blit(self.image, self.rect)
+    def render(self, canvas: pygame.Surface) -> None:
+        canvas.blit(self.image, self.rect)
 
 
 class Paddle(pygame.sprite.Sprite):
-    def __init__(self) -> None:
+    def __init__(self, game) -> None:
         # only move on the x axis so some value are hard coded
         super().__init__()
+
+        self.game = game
 
         self.size: int = 150
         self.speed: int = settings.PADDLE_SPEED
@@ -98,21 +107,29 @@ class Paddle(pygame.sprite.Sprite):
         self.image.fill((0, 0, 255))
     
 
-    def update(self, keys: dict[str ,bool]) -> None:
+    def update(self, powerups: pygame.sprite.Group) -> None:
 
         # move with arrows
-        if keys['RIGHT']:
+        if self.game.keys['RIGHT']:
             self.direction = 1
-        elif keys['LEFT']:
+        elif self.game.keys['LEFT']:
             self.direction = -1
         else:
             self.direction = 0
 
+        # collide powerups
+        for powerup in powerups:
+            if self.rect.colliderect(powerup.rect):
+                powerup.powerup()
+                powerup.kill()
+
         # prevent paddle from going out of bouds
         if self.rect.right > settings.WIDTH:
-            self.pos.x = settings.WIDTH-self.size
+            self.rect.right = settings.WIDTH
+            self.pos.x = self.rect.x
         elif self.rect.left < 0:
-            self.pos.x = 0
+            self.rect.left = 0
+            self.pos.x = self.rect.x
         
 
         self.pos.x += self.speed * self.direction
@@ -136,3 +153,41 @@ class Brick(pygame.sprite.Sprite):
     def render(self, canvas) -> None:
         canvas.blit(self.image, self.rect)
 
+
+class Powerup(pygame.sprite.Sprite):
+    '''parent class'''
+    def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
+        super().__init__()
+        group.add(self)
+        self.game = game
+        self.image = pygame.Surface(size=(16, 16))
+        self.image.fill('#ffff00')
+        self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
+
+
+    def powerup(self) -> None:
+        raise NotImplementedError("this is a parent class and shall not be used as is.")
+
+
+    def update(self) -> None:
+        self.rect.y += settings.POWERUP_SPEED
+        if self.rect.top > settings.HEIGHT:
+            self.kill()    # i feel bat about this poor guy
+
+
+    def render(self, canvas: pygame.Surface) -> None:
+        canvas.blit(self.image, self.rect)
+
+
+class Paddle_growup(Powerup):
+    def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
+        super().__init__(game, group, pos)
+        self.image.fill('#00ffff')
+
+    def powerup(self) -> None:
+        # add 20% to the paddle size
+        self.game.stack[-1].paddle.rect.x -= self.game.stack[-1].paddle.rect.width * 0.1
+        self.game.stack[-1].paddle.pos.x = self.game.stack[-1].paddle.rect.x
+        self.game.stack[-1].paddle.rect.width *= 1.2
+        self.game.stack[-1].paddle.image = pygame.Surface(size=(self.game.stack[-1].paddle.rect.width, self.game.stack[-1].paddle.rect.height))
+        self.game.stack[-1].paddle.image.fill(settings.PADDLE_COLOR)

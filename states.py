@@ -138,8 +138,9 @@ class Gameplay(State):
 
         # create objects
         self.ball = Ball(self.game)
-        self.paddle = Paddle()
+        self.paddle = Paddle(self.game)
         self.bricks: pygame.sprite.Group = pygame.sprite.Group()
+        self.powerups: pygame.sprite.Group = pygame.sprite.Group()
         # setup bricks
         gap = 5
         for y in range(16):
@@ -151,9 +152,6 @@ class Gameplay(State):
 
     
     def update(self) -> None:
-
-        self.playtime_in_frames += 1
-
         # process keys press
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
@@ -169,27 +167,32 @@ class Gameplay(State):
             if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
                 print(countdown_in_seconds)    # should re-use this in the UI somehow
             self.countdown_in_frames -= 1
+        # main updates
         else:
-            # main update thing whatever blablabla
-            self.paddle.update(self.game.keys)
-            self.ball.update(self.paddle, self.bricks)
+            self.playtime_in_frames += 1
+
+            self.powerups.update()
+            self.paddle.update(self.powerups)
+            self.ball.update(self.paddle, self.bricks, self.powerups)
             if self.check_game_over():
                 self.game_over()
             if self.check_win():
                 self.win()
 
-        # update score
-        playtime = self.playtime_in_frames / settings.FPS
-        self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
-        self.score = round(self.score)
+            # update score
+            playtime = self.playtime_in_frames / settings.FPS
+            self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
+            self.score = round(self.score)
 
 
     def render(self) -> None:
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
         for brick in self.bricks:
             brick.render(self.canvas)
+        for powerup in self.powerups:
+            powerup.render(self.canvas)
         self.paddle.render(self.canvas)
-        self.ball.render()
+        self.ball.render(self.canvas)
 
         self.game.canvas = self.canvas
 
