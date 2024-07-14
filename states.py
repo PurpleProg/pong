@@ -7,12 +7,13 @@ import base64
 from entitys import Ball, Paddle, Brick
 
 
-def save(score: dict[str, int]) -> None:
+def save(score: int) -> None:
     ''' save the highscore to file '''
     score_data = {
         'manu': score
     }
     score_json: str = json.dumps(score_data)
+    print(score_json)
     encoded_json: str = base64.b64encode(score_json.encode()).decode()
     with open('highscore', 'w') as highscore:
         highscore.write(encoded_json)
@@ -222,7 +223,9 @@ class Gameover(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
+        # save the highscore to file if score > highscore
         if (self.prev_state.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.prev_state.score
             save(self.prev_state.score)
 
         # setup buttons
@@ -236,7 +239,7 @@ class Gameover(State):
         self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
 
         self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
-
+        self.highscore_text_surface: pygame.Surface = self.score_font.render(f"highscore : {self.game.highscore['manu']}", False, color='#000000')
 
     def to_menu(self) -> None:
         # stack :               mainmenu > gameplay > gameover
@@ -321,10 +324,14 @@ class Gameover(State):
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
             y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
             button.render(x, y)
-        # blit the score
+        # blit the score and highscore
         self.canvas.blit(self.score_text_surf, dest=(
             settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
             settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
+        self.canvas.blit(self.highscore_text_surface, dest=(
+            settings.WIDTH/2 - self.highscore_text_surface.get_rect().width/2,
+            settings.HEIGHT-(3 * settings.HEIGHT/10)
         ))
 
         self.game.canvas = self.canvas
