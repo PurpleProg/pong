@@ -59,7 +59,7 @@ class Ball(pygame.sprite.Sprite):
         for brick in bricks:
             if brick.rect.colliderect(self.rect):
                 bricks.remove(brick)
-                self.game.stack[-1].score += settings.BRICK_SCORE    # assuming that the ball is ONLY used from gameplay
+                self.game.stack[-1].bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
                 # X axis
                 if self.direction.x > 0:
                     delta_x = self.rect.right - brick.rect.left
