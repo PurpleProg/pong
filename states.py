@@ -2,6 +2,7 @@ import pygame
 import settings
 import sys  # for proper exit
 import time
+import json
 from entitys import Ball, Paddle, Brick
 
 
@@ -209,6 +210,8 @@ class Gameover(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
+        self.save()
+
         # setup buttons
         self.buttons: list = []
         menu = Button(self.game, self, 'menu', self.buttons, self.to_menu)
@@ -220,6 +223,16 @@ class Gameover(State):
         self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
 
         self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
+
+
+    def save(self) -> None:
+        ''' save the score '''
+        score_data = {
+            'manu': self.prev_state.score
+        }
+        score_json = json.dumps(score_data)
+        with open('highscore', 'w') as highscore:
+            highscore.write(score_json)
 
 
     def to_menu(self) -> None:
@@ -320,6 +333,8 @@ class Win(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
+        self.save()
+
         # setup buttons
         self.buttons: list = []
         menu = Button(self.game, self, 'menu', self.buttons, self.to_menu)
@@ -331,6 +346,16 @@ class Win(State):
         self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
 
         self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
+
+
+    def save(self) -> None:
+        ''' save the score '''
+        score_data = {
+            'manu': self.prev_state.score
+        }
+        score_json = json.dumps(score_data)
+        with open('highscore', 'w') as highscore:
+            highscore.write(score_json)
 
 
     def to_menu(self) -> None:
