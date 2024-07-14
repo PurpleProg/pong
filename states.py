@@ -423,6 +423,11 @@ class Pause(State):
         super().__init__(game)
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill(settings.PAUSE_COLOR)
+
+        # background
+        self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.transparency.fill(settings.PAUSE_COLOR)
+        self.transparency.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
         
         # init buttons
         self.buttons: list[Button] = []
@@ -501,9 +506,6 @@ class Pause(State):
         self.canvas = self.prev_state.canvas.copy()   # last state's canvas
 
         # blit the transparent background
-        self.transparency: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
-        self.transparency.fill(settings.PAUSE_COLOR)
-        self.transparency.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
         self.canvas.blit(self.transparency, dest=(0, 0))
 
         # blit the buttons

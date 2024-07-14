@@ -9,7 +9,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [x] pause screen
 - [ ] animations (maybe)
 - [ ] mouse support (maybe)
-- [ ] make the ball a circle (not a square wtf)
+- [x] make the ball a circle (not a square wtf)
 - [ ] fix ball sideways paddle collision
 - [x] the score system
 - [x] fix score timer in pause

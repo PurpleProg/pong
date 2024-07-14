@@ -14,12 +14,10 @@ class Ball(pygame.sprite.Sprite):
             settings.HEIGHT - settings.HEIGHT/6
         )
 
-        self.image: pygame.Surface = pygame.Surface(size=(16, 16))
-        self.image.fill((255, 0, 0))
-
-        self.rect: pygame.Rect = pygame.rect.Rect(self.pos.x, self.pos.y, 16, 16)
-        self.prev_rect = self.rect.copy()
-
+        self.image: pygame.Surface = pygame.Surface(size=(settings.BALL_RADIUS*2, settings.BALL_RADIUS*2))
+        self.rect: pygame.Rect = pygame.rect.Rect(self.pos.x, self.pos.y, settings.BALL_RADIUS*2, settings.BALL_RADIUS*2)
+        pygame.draw.circle(self.image, settings.BALL_COLOR, (settings.BALL_RADIUS, settings.BALL_RADIUS), settings.BALL_RADIUS, width=settings.BALL_RADIUS)
+ 
 
     def update(self, paddle, bricks) -> None:
         '''change the position of the ball'''
