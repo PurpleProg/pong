@@ -43,7 +43,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### pause screen :
 - [x] transparent background
-- [ ] timer befor the ball moves
+- [x] timer befor the ball moves
 - [x] back to game button
 - [x] score
 - [x] quit to mainmenu
