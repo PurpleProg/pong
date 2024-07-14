@@ -1,7 +1,7 @@
 import pygame
 import settings
 import random
-import math
+import math  # for bounce angle calc
 
 
 class Ball(pygame.sprite.Sprite):
@@ -60,13 +60,12 @@ class Ball(pygame.sprite.Sprite):
             self.direction.x = math.sin(bounce_angle_in_radian)
             self.direction.y = -math.cos(bounce_angle_in_radian)
 
-            self.direction.normalize_ip()
-
         # bricks
         for brick in bricks:
             if brick.rect.colliderect(self.rect):
                 # spawn powerup
                 match random.randint(0, 20):
+
                     case 1:
                         p = Paddle_growup(self.game, powerups, brick.rect.center)
                     case 2:
@@ -93,6 +92,7 @@ class Ball(pygame.sprite.Sprite):
                 else:                      # comming from the sides
                     self.direction.x *= -1
 
+        self.direction.normalize_ip()
         
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)

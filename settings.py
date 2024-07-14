@@ -8,8 +8,11 @@ PAUSE_COLOR = ('#ffff00')
 
 MAX_BOUNCE_ANGLE = 60
 
+MAINMENU_BG_COLOR = '#00ffff'
+
 # default font. There also is a bold and a mono variant.
 FONT_NAME = 'font/PixeloidSans.ttf'
+FONT_COLOR = '#000000'
 FONT_SIZE = 30
 
 # screen
