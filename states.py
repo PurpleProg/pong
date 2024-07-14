@@ -1,9 +1,8 @@
 import pygame
 import settings
 import sys  # for proper exit
-import time
-import json
-import base64
+import json  # for save
+import base64   # for save
 from entitys import Ball, Paddle, Brick
 
 
@@ -52,7 +51,7 @@ class Mainmenu(State):
 
         # init font
         big_menu_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
-        self.menu_text_surface = big_menu_font.render('MAIN MENU', False, color=('#000000'))
+        self.menu_text_surface = big_menu_font.render('MAIN MENU', False, color=(settings.FONT_COLOR))
   
 
     def exit_game(self) -> None:
@@ -106,7 +105,7 @@ class Mainmenu(State):
 
 
     def render(self) -> None:
-        self.canvas.fill('#00ffff')
+        self.canvas.fill(settings.MAINMENU_BG_COLOR)
 
         # blit the MAIN MENU text
         self.canvas.blit(self.menu_text_surface, dest=(
@@ -229,17 +228,17 @@ class Gameplay(State):
         gameoverstate = Gameover(self.game)
         gameoverstate.enter_state()
 
-        # save the highscore to file if score > highscore
-        if (self.score > self.game.highscore['manu']):
-            self.game.highscore['manu'] = self.score
-            save(self.score)
-
 
 class Gameover(State):
     def __init__(self, game) -> None:
         super().__init__(game)
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
+
+        # save score
+        if (self.prev_state.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.prev_state.score
+            save(self.prev_state.score)
 
         # setup buttons
         self.buttons: list = []
@@ -248,11 +247,11 @@ class Gameover(State):
 
         # setup font
         self.game_over_font = pygame.font.Font ('font/PixeloidSansBold.ttf', 80)
-        self.game_over_text_surf = self.game_over_font.render('GAME OVER', False, color=('#000000'))
+        self.game_over_text_surf = self.game_over_font.render('GAME OVER', False, color=(settings.FONT_COLOR))
         self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
 
-        self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
-        self.highscore_text_surface: pygame.Surface = self.score_font.render(f"highscore : {self.game.highscore['manu']}", False, color='#000000')
+        self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=(settings.FONT_COLOR))
+        self.highscore_text_surface: pygame.Surface = self.score_font.render(f"highscore : {self.game.highscore['manu']}", False, color=settings.FONT_COLOR)
 
     def to_menu(self) -> None:
         # stack :               mainmenu > gameplay > gameover
@@ -356,7 +355,9 @@ class Win(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
-        if self.prev_state.score > self.game.highscore['manu']:
+        # save score
+        if (self.prev_state.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.prev_state.score
             save(self.prev_state.score)
 
         # setup buttons
@@ -367,11 +368,11 @@ class Win(State):
         # setup font
         win_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
         self.score_win_font = pygame.font.Font('font/PixeloidSans.ttf', 50)
-        self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
+        self.win_text_surface = win_font.render('YOU WON !!!', False, color=(settings.FONT_COLOR))
 
-        self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
-        self.highscore_text_surface: pygame.Surface = self.score_win_font.render(f"highscore : {self.game.highscore['manu']}", False, color='#000000')
-        self.playtime_text_surface: pygame.Surface = self.score_win_font.render(f"playtime : {self.prev_state.playtime_in_frames/settings.FPS:.2f}", False, color='#000000')
+        self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=(settings.FONT_COLOR))
+        self.highscore_text_surface: pygame.Surface = self.score_win_font.render(f"highscore : {self.game.highscore['manu']}", False, color=settings.FONT_COLOR)
+        self.playtime_text_surface: pygame.Surface = self.score_win_font.render(f"playtime : {self.prev_state.playtime_in_frames/settings.FPS:.2f}", False, color=settings.FONT_COLOR)
 
 
     def to_menu(self) -> None:
@@ -488,7 +489,7 @@ class Pause(State):
 
         # score
         self.score_font = pygame.font.Font('font/PixeloidSans.ttf', 50)
-        self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
+        self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=(settings.FONT_COLOR))
 
 
     # fonctions to pass to the buttons
