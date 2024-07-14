@@ -1,12 +1,12 @@
 import pygame
 import sys  # for proper exit
 import settings
+import json
 from states import Mainmenu, State
 
 
 class Game:
     def __init__(self) -> None:
-        # init pygame
         # font
         pygame.init()
         pygame.font.init()
@@ -33,6 +33,8 @@ class Game:
             'LEFT': False,
             'p': False,
         }
+        with open('highscore', 'r') as highscore_json_data:
+            self.highscore = json.load(highscore_json_data)
 
         
     def main_loop(self) -> None:
