@@ -38,7 +38,7 @@ class Mainmenu(State):
         play_button = Button(self.game, self, 'play', self.buttons, self.play, highlight=True)
 
         # init font
-        big_menu_font = pygame.font.Font('PixeloidSansBold.ttf', 80)
+        big_menu_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
         self.menu_text_surface = big_menu_font.render('MAIN MENU', False, color=('#000000'))
   
 
@@ -215,9 +215,9 @@ class Gameover(State):
         replay = Button(self.game, self, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
-        self.game_over_font = pygame.font.Font ('PixeloidSansBold.ttf', 80)
+        self.game_over_font = pygame.font.Font ('font/PixeloidSansBold.ttf', 80)
         self.game_over_text_surf = self.game_over_font.render('GAME OVER', False, color=('#000000'))
-        self.score_font = pygame.font.Font('PixeloidMono.ttf', 50)
+        self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
 
         self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
 
@@ -326,8 +326,8 @@ class Win(State):
         replay = Button(self.game, self, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
-        win_font = pygame.font.Font('PixeloidSansBold.ttf', 80)
-        self.score_win_font = pygame.font.Font('PixeloidSans.tff', 50)
+        win_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
+        self.score_win_font = pygame.font.Font('font/PixeloidSans.ttf', 50)
         self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
 
         self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
@@ -433,7 +433,7 @@ class Pause(State):
         return_button = Button(self.game, self, 'return to game', self.buttons, self.exit_state, highlight=True)
 
         # score
-        self.score_font = pygame.font.Font('PixeloidSans.tff', 50)
+        self.score_font = pygame.font.Font('font/PixeloidSans.ttf', 50)
         self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
 
 

@@ -7,9 +7,11 @@ from states import Mainmenu, State
 class Game:
     def __init__(self) -> None:
         # init pygame
+        # font
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.Font(settings.FONT_NAME, settings.FONT_SIZE)
+        # display
         self.display = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
         pygame.display.set_caption("Pong Game")
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
