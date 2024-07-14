@@ -115,7 +115,7 @@ class Gameplay(State):
         super().__init__(game)
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
-        self.score = 0
+        self.score: float = 0.0
         self.bricks_breaked = 0
         self.playtime_in_frames = 0
 
@@ -322,7 +322,7 @@ class Win(State):
 
         # setup buttons
         self.buttons: list = []
-        menu = Button(self.game, self,canvas, 'menu', self.buttons, self.to_menu)
+        menu = Button(self.game, self, 'menu', self.buttons, self.to_menu)
         replay = Button(self.game, self, 'replay', self.buttons, self.replay, highlight=True)
 
         # setup font
@@ -430,7 +430,7 @@ class Pause(State):
         # the first button declared here is the bottom one, the last is on top.
         menu_button = Button(self.game, self, 'menu', self.buttons, self.to_mainmenu)
         settings_button = Button(self.game, self, 'settings', self.buttons, self.to_settings)
-        return_button = Button(self.game, self, 'return to game', self.buttons, self.resume, highlight=True)
+        return_button = Button(self.game, self, 'resume', self.buttons, self.resume, highlight=True)
 
         # score
         self.score_font = pygame.font.Font('font/PixeloidSans.ttf', 50)

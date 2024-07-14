@@ -26,6 +26,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### menu UI :
 - [ ] background image
+- [ ] difficultie selection
 - [x] button play
 - [x] button exit
 - [ ] high score (saving data)
