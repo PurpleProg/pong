@@ -33,8 +33,14 @@ class Game:
             'LEFT': False,
             'p': False,
         }
-        with open('highscore', 'r') as highscore_json_data:
-            self.highscore = json.load(highscore_json_data)
+        try:
+            with open('highscore', 'r') as highscore_json_data:
+                self.highscore = json.load(highscore_json_data)
+        except FileNotFoundError:
+            # if file not found, create it with hiscore 0
+            with open('highscore', 'w') as highscore:
+                self.highscore = {'manu': 0}
+                highscore.write(json.dumps(self.highscore))
 
         
     def main_loop(self) -> None:

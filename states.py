@@ -210,7 +210,8 @@ class Gameover(State):
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
 
-        self.save()
+        if (self.prev_state.score > self.game.highscore['manu']):
+            self.save()
 
         # setup buttons
         self.buttons: list = []
