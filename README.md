@@ -12,7 +12,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] make the ball a circle (not a square wtf)
 - [ ] fix ball sideways paddle collision
 - [x] the score system
-- [ ] fix score timer in pause
+- [x] fix score timer in pause
 - [ ] powerup (increase paddle size, create more balls)
 - [ ] highscore save system (json ?)
 - [ ] sounds
@@ -42,14 +42,14 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] time
 
 ### pause screen :
-- [ ] maybe try a nested stack here for keeping track of the menus
 - [x] transparent background
 - [ ] timer befor the ball moves
 - [x] back to game button
-- [ ] score
+- [x] score
 - [x] quit to mainmenu
 
 ### settings :
+- [ ] maybe try a nested stack here for keeping track of the menus
 - [ ] bindings
 - [ ] sound volume
 - [ ] game speed
