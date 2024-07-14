@@ -6,6 +6,7 @@ COUNTDOWN = 1     # number of second before the gameplay start
 BACKGROUND_COLOR = ('#000000')  # to replace with assets
 PAUSE_COLOR = ('#ffff00')
 
+MAX_BOUNCE_ANGLE = 60
 
 # default font. There also is a bold and a mono variant.
 FONT_NAME = 'font/PixeloidSans.ttf'

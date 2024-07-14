@@ -1,6 +1,7 @@
 import pygame
 import settings
 import random
+import math
 
 
 class Ball(pygame.sprite.Sprite):
@@ -49,11 +50,17 @@ class Ball(pygame.sprite.Sprite):
         # paddle
         if self.rect.colliderect(paddle.rect):
             self.rect.bottom = paddle.rect.top
-            self.direction.y = -1
-            if self.rect.center > paddle.rect.center:
-                self.direction.x = 1
-            else:
-                self.direction.x = -1
+
+            # calculate angle
+            distance = self.rect.centerx - paddle.rect.centerx
+            normalized_distance = distance/(paddle.rect.width/2)
+            bounce_angle = settings.MAX_BOUNCE_ANGLE * normalized_distance
+            bounce_angle_in_radian = math.radians(bounce_angle)
+
+            self.direction.x = math.sin(bounce_angle_in_radian)
+            self.direction.y = -math.cos(bounce_angle_in_radian)
+
+            self.direction.normalize_ip()
 
         # bricks
         for brick in bricks:
