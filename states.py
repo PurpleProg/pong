@@ -2,7 +2,21 @@ import pygame
 import settings
 import sys  # for proper exit
 import time
+import json
+import base64
 from entitys import Ball, Paddle, Brick
+
+
+def save(score: int) -> None:
+    ''' save the highscore to file '''
+    score_data = {
+        'manu': score
+    }
+    score_json: str = json.dumps(score_data)
+    print(score_json)
+    encoded_json: str = base64.b64encode(score_json.encode()).decode()
+    with open('highscore', 'w') as highscore:
+        highscore.write(encoded_json)
 
 
 class State:
@@ -144,7 +158,10 @@ class Gameplay(State):
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
             pause = Pause(self.game)
-            pause.enter_state()   
+            pause.enter_state()
+        if self.game.keys['p']:
+            self.game.keys['p'] = False
+            self.win()
 
         # countdown befor start
         if self.countdown_in_frames:
@@ -188,6 +205,11 @@ class Gameplay(State):
         win = Win(self.game)
         win.enter_state()
 
+        # save the highscore to file if score > highscore
+        if (self.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.score
+            save(self.score)
+
 
     def check_game_over(self) -> bool:
         ''' check the ball pos '''
@@ -201,6 +223,11 @@ class Gameplay(State):
         '''append game over state to the stack and calc score based on time'''
         gameoverstate = Gameover(self.game)
         gameoverstate.enter_state()
+
+        # save the highscore to file if score > highscore
+        if (self.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.score
+            save(self.score)
 
 
 class Gameover(State):
@@ -220,7 +247,7 @@ class Gameover(State):
         self.score_font = pygame.font.Font('font/PixeloidMono.ttf', 50)
 
         self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
-
+        self.highscore_text_surface: pygame.Surface = self.score_font.render(f"highscore : {self.game.highscore['manu']}", False, color='#000000')
 
     def to_menu(self) -> None:
         # stack :               mainmenu > gameplay > gameover
@@ -305,10 +332,14 @@ class Gameover(State):
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
             y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
             button.render(x, y)
-        # blit the score
+        # blit the score and highscore
         self.canvas.blit(self.score_text_surf, dest=(
             settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
             settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
+        self.canvas.blit(self.highscore_text_surface, dest=(
+            settings.WIDTH/2 - self.highscore_text_surface.get_rect().width/2,
+            settings.HEIGHT-(3 * settings.HEIGHT/10)
         ))
 
         self.game.canvas = self.canvas
@@ -319,6 +350,9 @@ class Win(State):
         super().__init__(game)
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.canvas.fill((255, 0, 0))
+
+        if self.prev_state.score > self.game.highscore['manu']:
+            save(self.prev_state.score)
 
         # setup buttons
         self.buttons: list = []
@@ -331,6 +365,8 @@ class Win(State):
         self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
 
         self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
+        self.highscore_text_surface: pygame.Surface = self.score_win_font.render(f"highscore : {self.game.highscore['manu']}", False, color='#000000')
+        self.playtime_text_surface: pygame.Surface = self.score_win_font.render(f"playtime : {self.prev_state.playtime_in_frames/settings.FPS:.2f}", False, color='#000000')
 
 
     def to_menu(self) -> None:
@@ -409,10 +445,18 @@ class Win(State):
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
             y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
             button.render(x, y)
-        # blit the score
+        # blit the score and the highscore and the playtime
         self.canvas.blit(self.score_text_surf, dest=(
             settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
             settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
+        self.canvas.blit(self.highscore_text_surface, dest=(
+            settings.WIDTH/2 - self.highscore_text_surface.get_rect().width/2, 
+            settings.HEIGHT-(3 * settings.HEIGHT/10)
+        ))
+        self.canvas.blit(self.playtime_text_surface, dest=(
+            settings.WIDTH/2 - self.playtime_text_surface.get_rect().width/2, 
+            settings.HEIGHT-(4 * settings.HEIGHT/10)
         ))
 
         self.game.canvas = self.canvas
