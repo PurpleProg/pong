@@ -13,11 +13,13 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] fix ball sideways paddle collision
 - [x] the score system
 - [x] fix score timer in pause
-- [ ] powerup (increase paddle size, create more balls)
 - [x] highscore save system (json ?)
 - [ ] sounds
 - [x] timer before ball start moving
 
+### powerups :
+- [x] paddle size
+- [x] multiple balls
 
 ### difficulties
 - [ ] hard (no powerup, little paddle, fast ball)

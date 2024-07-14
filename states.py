@@ -13,7 +13,6 @@ def save(score: int) -> None:
         'manu': score
     }
     score_json: str = json.dumps(score_data)
-    print(score_json)
     encoded_json: str = base64.b64encode(score_json.encode()).decode()
     with open('highscore', 'w') as highscore:
         highscore.write(encoded_json)
@@ -137,9 +136,11 @@ class Gameplay(State):
         self.countdown_in_frames = settings.COUNTDOWN*settings.FPS
 
         # create objects
-        self.ball = Ball(self.game)
-        self.paddle = Paddle()
+        self.balls = pygame.sprite.Group()
+        ball = Ball(self.game, self.balls, pygame.Vector2(settings.WIDTH/2 - 16/2, settings.HEIGHT - settings.HEIGHT/6))
+        self.paddle = Paddle(self.game)
         self.bricks: pygame.sprite.Group = pygame.sprite.Group()
+        self.powerups: pygame.sprite.Group = pygame.sprite.Group()
         # setup bricks
         gap = 5
         for y in range(16):
@@ -151,9 +152,6 @@ class Gameplay(State):
 
     
     def update(self) -> None:
-
-        self.playtime_in_frames += 1
-
         # process keys press
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
@@ -167,29 +165,37 @@ class Gameplay(State):
         if self.countdown_in_frames:
             countdown_in_seconds = self.countdown_in_frames/settings.FPS
             if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
-                print(countdown_in_seconds)    # should re-use this in the UI somehow
+                # print(countdown_in_seconds)    # should re-use this in the UI somehow
+                pass
             self.countdown_in_frames -= 1
+        # main updates
         else:
-            # main update thing whatever blablabla
-            self.paddle.update(self.game.keys)
-            self.ball.update(self.paddle, self.bricks)
+            self.playtime_in_frames += 1
+
+            self.powerups.update()
+            self.paddle.update(self.powerups)
+            for ball in self.balls:
+                ball.update(self.paddle, self.bricks, self.powerups)
             if self.check_game_over():
                 self.game_over()
             if self.check_win():
                 self.win()
 
-        # update score
-        playtime = self.playtime_in_frames / settings.FPS
-        self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
-        self.score = round(self.score)
+            # update score
+            playtime = self.playtime_in_frames / settings.FPS
+            self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
+            self.score = round(self.score)
 
 
     def render(self) -> None:
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
         for brick in self.bricks:
             brick.render(self.canvas)
+        for powerup in self.powerups:
+            powerup.render(self.canvas)
         self.paddle.render(self.canvas)
-        self.ball.render()
+        for ball in self.balls:
+            ball.render(self.canvas)
 
         self.game.canvas = self.canvas
 
@@ -212,8 +218,7 @@ class Gameplay(State):
 
 
     def check_game_over(self) -> bool:
-        ''' check the ball pos '''
-        if self.ball.pos.y > settings.HEIGHT:
+        if len(self.balls) <= 0:
             return True
         else:
             return False
