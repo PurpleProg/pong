@@ -14,7 +14,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [x] the score system
 - [x] fix score timer in pause
 - [ ] powerup (increase paddle size, create more balls)
-- [ ] highscore save system (json ?)
+- [x] highscore save system (json ?)
 - [ ] sounds
 - [x] timer before ball start moving
 
@@ -34,6 +34,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### death screen
 - [x] score
+- [x] highscore
 - [x] replay button
 - [x] menu button
 

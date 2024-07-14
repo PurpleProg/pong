@@ -357,6 +357,7 @@ class Win(State):
         self.win_text_surface = win_font.render('YOU WON !!!', False, color=('#000000'))
 
         self.score_text_surf = self.score_win_font.render(f'score : {self.prev_state.score}', False, color=('#000000'))
+        self.highscore_text_surface: pygame.Surface = win_font.render(f"highscore : {self.game.highlight['manu']}", False, color='#000000')
 
 
     def to_menu(self) -> None:
@@ -435,10 +436,14 @@ class Win(State):
             x = settings.WIDTH/2 - button.rect.width/2   # center button in X axis
             y = (settings.HEIGHT/2 - (button.rect.height/2) * ((3*i)+1) ) + (len(self.buttons)/2) * (button.rect.height)
             button.render(x, y)
-        # blit the score
+        # blit the score and the highscore
         self.canvas.blit(self.score_text_surf, dest=(
             settings.WIDTH/2 - self.score_text_surf.get_rect().width/2, 
             settings.HEIGHT-(2 * settings.HEIGHT/10)
+        ))
+        self.canvas.blit(self.highscore_text_surface, dest=(
+            settings.WIDTH/2 - self.highscore_text_surface.get_rect().width/2, 
+            settings.HEIGHT-(3 * settings.HEIGHT/10)
         ))
 
         self.game.canvas = self.canvas
