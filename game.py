@@ -2,6 +2,7 @@ import pygame
 import sys  # for proper exit
 import settings
 import json
+import base64
 from states import Mainmenu, State
 
 
@@ -34,13 +35,17 @@ class Game:
             'p': False,
         }
         try:
-            with open('highscore', 'r') as highscore_json_data:
-                self.highscore = json.load(highscore_json_data)
+            with open('highscore', 'r') as highscore_file:
+                encoded_json: str = highscore_file.read()
+                decoded_json: str = base64.b64decode(encoded_json.encode()).decode()
+                self.highscore = decoded_json
         except FileNotFoundError:
-            # if file not found, create it with hiscore 0
+            # if the file is not found, create it with hiscore 0
             with open('highscore', 'w') as highscore:
                 self.highscore = {'manu': 0}
-                highscore.write(json.dumps(self.highscore))
+                json_data = json.dumps(self.highscore)
+                encoded_data = base64.b64encode(json_data.encode())    # byte like objects
+                highscore.write(encoded_data.decode())   # decode method just convert it to string
 
         
     def main_loop(self) -> None:
