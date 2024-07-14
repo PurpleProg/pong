@@ -19,7 +19,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### powerups :
 - [x] paddle size
-- [ ] multiple balls
+- [x] multiple balls
 
 ### difficulties
 - [ ] hard (no powerup, little paddle, fast ball)
