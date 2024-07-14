@@ -114,7 +114,7 @@ class Gameplay(State):
         self.game = game
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.score = 0
-        self.start_time = time.time()
+        self.playtime_in_frames = 0
 
         # timer
         self.countdown = settings.COUNTDOWN*settings.FPS
@@ -134,6 +134,8 @@ class Gameplay(State):
 
     
     def update(self) -> None:
+
+        self.playtime_in_frames += 1
 
         # process keys press
         if self.game.keys['ESCAPE']:
@@ -176,7 +178,7 @@ class Gameplay(State):
 
     
     def win(self) -> None:
-        playtime = round(time.time() - self.start_time)
+        playtime = int(self.playtime_in_frames / settings.FPS)
         self.score -= playtime
 
         win = Win(self.game)
@@ -193,7 +195,7 @@ class Gameplay(State):
 
     def game_over(self) -> None:
         '''append game over state to the stack and calc score based on time'''
-        playtime = round(time.time() - self.start_time)
+        playtime = int(self.playtime_in_frames / settings.FPS)
         self.score -= playtime
         gameoverstate = Gameover(self.game)
         gameoverstate.enter_state()
@@ -336,6 +338,7 @@ class Win(State):
 
     def update(self) -> None:
         if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False
             self.exit_state()
         
         if self.game.keys['UP']:
