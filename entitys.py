@@ -69,7 +69,7 @@ class Ball(pygame.sprite.Sprite):
                     case 1:
                         p = Paddle_growup(self.game, powerups, brick.rect.center)
                     case 2:
-                        p = Multiple_balls(self.game, powerups, brick.rect.center)
+                        b = Multiple_balls(self.game, powerups, brick.rect.center)
 
                 bricks.remove(brick)
                 self.game.stack[-1].bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
@@ -172,9 +172,9 @@ class Powerup(pygame.sprite.Sprite):
         group.add(self)
         self.game = game
         self.active = False
-        self.image = pygame.Surface(size=(16, 16))
+        self.image: pygame.Surface = pygame.Surface(size=(16, 16))
         self.image.fill('#ffff00')
-        self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
+        self.rect: pygame.Rect = pygame.Rect(pos[0], pos[1], 16, 16)
 
 
     def powerup(self) -> None:
@@ -239,7 +239,7 @@ class Multiple_balls(Powerup):
     
 
     def powerup(self) -> None:
-        tmp_grp = pygame.sprite.Group()
+        tmp_grp: pygame.sprite.Group = pygame.sprite.Group()
         for ball in self.game.stack[-1].balls:
             for _ in range(2):
                 ball = Ball(self.game, tmp_grp, pos=pygame.Vector2(ball.pos.x + 2, ball.pos.y + 2))

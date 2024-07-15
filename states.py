@@ -135,7 +135,7 @@ class Gameplay(State):
         self.countdown_in_frames = settings.COUNTDOWN*settings.FPS
 
         # create objects
-        self.balls = pygame.sprite.Group()
+        self.balls: pygame.sprite.Group = pygame.sprite.Group()
         ball = Ball(self.game, self.balls, pygame.Vector2(settings.WIDTH/2 - 16/2, settings.HEIGHT - settings.HEIGHT/6))
         self.paddle = Paddle(self.game)
         self.bricks: pygame.sprite.Group = pygame.sprite.Group()
@@ -213,7 +213,7 @@ class Gameplay(State):
         # save the highscore to file if score > highscore
         if (self.score > self.game.highscore['manu']):
             self.game.highscore['manu'] = self.score
-            save(self.score)
+            save(round(self.score))
 
 
     def check_game_over(self) -> bool:
