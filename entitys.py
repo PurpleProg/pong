@@ -113,10 +113,11 @@ class Paddle(pygame.sprite.Sprite):
         self.speed: int = settings.PADDLE_SPEED
         self.direction: int = 0
 
-        self.pos: pygame.Vector2 = pygame.Vector2( ( (settings.WIDTH/2) -(self.size/2) ), settings.HEIGHT-settings.HEIGHT/10)  # center the paddle on x and 10% of height on y
-        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, self.size, 20)  # hardcoded height
-        self.image: pygame.Surface = pygame.Surface(size=(self.size, 20))  # must match the rect height
-        self.image.fill((0, 0, 255))
+        self.image = pygame.image.load('assets/Paddles/Style B/Paddle_B_Purple_128x28.png').convert()
+        self.image.set_colorkey('#ff00ff')
+        self.pos: pygame.Vector2 = pygame.Vector2( ( (settings.WIDTH/2) -(self.image.get_width()/2) ), settings.HEIGHT-settings.HEIGHT/10)  # center the paddle on x and 10% of height on y
+        self.rect: pygame.Rect = self.image.get_rect()
+        self.rect.x, self.rect.y = self.pos.x, self.pos.y
     
 
     def update(self, powerups: pygame.sprite.Group) -> None:
