@@ -22,7 +22,7 @@ class Ball(pygame.sprite.Sprite):
     def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         '''change the position of the ball'''
 
-        if self.pos.y > settings.HEIGHT:
+        if self.pos.y > settings.HEIGHT and not settings.INVISIBILITY:
             self.kill()
 
         self.pos.x += self.speed * self.direction.x
@@ -46,6 +46,9 @@ class Ball(pygame.sprite.Sprite):
         if self.rect.top < 0:
             self.rect.top = 0
             self.direction.y = 1
+        if self.rect.bottom > settings.HEIGHT and settings.INVISIBILITY:
+            self.direction.y = -1
+            self.rect.bottom = settings.HEIGHT
 
         # paddle
         if self.rect.colliderect(paddle.rect):
@@ -93,7 +96,8 @@ class Ball(pygame.sprite.Sprite):
                     self.direction.x *= -1
 
         self.direction.normalize_ip()
-        
+
+
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -117,7 +121,7 @@ class Paddle(pygame.sprite.Sprite):
 
     def update(self, powerups: pygame.sprite.Group) -> None:
 
-        # move with arrows
+        # update direction with arrows
         if self.game.keys['RIGHT']:
             self.direction = 1
         elif self.game.keys['LEFT']:
@@ -125,26 +129,24 @@ class Paddle(pygame.sprite.Sprite):
         else:
             self.direction = 0
 
+        # move the paddle
+        self.pos.x += self.speed * self.direction
+        self.rect.x = int(self.pos.x)
+
         # collide powerups
         for powerup in powerups:
             if self.rect.colliderect(powerup.rect):
-                powerup.powerup()
-                powerup.active = True
-                # not the cleanest way but it work
-                powerup.image.set_alpha(0)
-                powerup.rect.y = 0
+                powerup.activate()
+     
 
         # prevent paddle from going out of bouds
         if self.rect.right > settings.WIDTH:
             self.rect.right = settings.WIDTH
+            self.game.keys['RIGHT'] = False
             self.pos.x = self.rect.x
         elif self.rect.left < 0:
             self.rect.left = 0
             self.pos.x = self.rect.x
-        
-
-        self.pos.x += self.speed * self.direction
-        self.rect.x = int(self.pos.x)
 
 
     def render(self, canvas: pygame.Surface) -> None:
@@ -175,6 +177,14 @@ class Powerup(pygame.sprite.Sprite):
         self.image: pygame.Surface = pygame.Surface(size=(16, 16))
         self.image.fill('#ffff00')
         self.rect: pygame.Rect = pygame.Rect(pos[0], pos[1], 16, 16)
+
+
+    def activate(self) -> None:
+        '''make it invisible and apply the powerup'''
+        self.image.set_alpha(0)
+        self.rect.y = 0
+        self.active = True
+        self.powerup()
 
 
     def powerup(self) -> None:
@@ -222,6 +232,7 @@ class Paddle_growup(Powerup):
         # corect the image
         self.game.stack[-1].paddle.image = pygame.Surface(size=(self.game.stack[-1].paddle.rect.width, self.game.stack[-1].paddle.rect.height))
         self.game.stack[-1].paddle.image.fill(settings.PADDLE_COLOR)
+
 
     def unpowerup(self) -> None: 
         # change size

@@ -1,4 +1,8 @@
 
+INVISIBILITY = True
+
+
+
 # screen
 WIDTH = 1024
 HEIGHT = 512
