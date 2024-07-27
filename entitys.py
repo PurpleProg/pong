@@ -195,8 +195,9 @@ class Paddle_growup(Powerup):
     def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
         super().__init__(game, group, pos)
         self.image.fill('#00ffff')
-        self.countdown_in_frames = 3 * settings.FPS
+        self.countdown_in_frames = settings.POWERUP_BIG_PADLLE_DURATION * settings.FPS
     
+
     def update(self) -> None:
         ''' overwrite for use a countdown '''
         if not self.active:
