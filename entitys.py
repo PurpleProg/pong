@@ -13,10 +13,12 @@ class Ball(pygame.sprite.Sprite):
         self.game = game
         self.speed: int = settings.BALL_SPEED
         self.direction: pygame.Vector2 = pygame.Vector2(random.choice([-1, 1]), -1)
+        
         self.pos: pygame.Vector2 = pos
-        self.image: pygame.Surface = pygame.Surface(size=(settings.BALL_RADIUS*2, settings.BALL_RADIUS*2))
-        self.rect: pygame.Rect = pygame.rect.Rect(self.pos.x, self.pos.y, settings.BALL_RADIUS*2, settings.BALL_RADIUS*2)
-        pygame.draw.circle(self.image, settings.BALL_COLOR, (settings.BALL_RADIUS, settings.BALL_RADIUS), settings.BALL_RADIUS, width=settings.BALL_RADIUS)
+        self.image: pygame.Surface = pygame.image.load('assets/Balls/Glass/Ball_Blue_Glass-32x32.png').convert()
+        self.image.set_colorkey('#ff00ff')
+        self.rect: pygame.Rect = self.image.get_rect()
+        self.rect.topleft = int(self.pos.x), int(self.pos.y)
  
 
     def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
@@ -104,20 +106,18 @@ class Ball(pygame.sprite.Sprite):
 
 class Paddle(pygame.sprite.Sprite):
     def __init__(self, game) -> None:
-        # only move on the x axis so some value are hard coded
         super().__init__()
 
         self.game = game
         
-        self.size: int = settings.PADDLE_SIZE
         self.speed: int = settings.PADDLE_SPEED
         self.direction: int = 0
 
-        self.image = pygame.image.load('assets/Paddles/Style B/Paddle_B_Purple_128x28.png').convert()
+        self.image: pygame.Surface = pygame.image.load('assets/Paddles/Style B/Paddle_B_Purple_128x28.png').convert()
         self.image.set_colorkey('#ff00ff')
         self.pos: pygame.Vector2 = pygame.Vector2( ( (settings.WIDTH/2) -(self.image.get_width()/2) ), settings.HEIGHT-settings.HEIGHT/10)  # center the paddle on x and 10% of height on y
         self.rect: pygame.Rect = self.image.get_rect()
-        self.rect.x, self.rect.y = self.pos.x, self.pos.y
+        self.rect.x, self.rect.y = int(self.pos.x), int(self.pos.y)
     
 
     def update(self, powerups: pygame.sprite.Group) -> None:
