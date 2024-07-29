@@ -136,17 +136,26 @@ class Gameplay(State):
 
         # create objects
         self.balls: pygame.sprite.Group = pygame.sprite.Group()
-        ball = Ball(self.game, self.balls, pygame.Vector2(settings.WIDTH/2 - 16/2, settings.HEIGHT - settings.HEIGHT/6))
+        ball = Ball(self.game, self.balls)
         self.paddle = Paddle(self.game)
         self.bricks: pygame.sprite.Group = pygame.sprite.Group()
         self.powerups: pygame.sprite.Group = pygame.sprite.Group()
-        # setup bricks
+
+        self.setup_bricks()
+
+
+    def setup_bricks(self) -> None:
+        offset = 25
         gap = 5
-        for y in range(16):
-            for x in range(14):
+        height = int(settings.HEIGHT*0.7)
+        brick = Brick(0, 0)
+        row_size = brick.rect.height+gap
+        column_size = brick.rect.width+gap
+        for y in range(height//row_size):
+            for x in range(settings.WIDTH//column_size):
                 self.bricks.add(Brick(
-                    25 + gap*x + x*settings.BRICK_WIDTH, 
-                    10 + gap*y + y*settings.BRICK_HEIGHT
+                    offset + (x * column_size),
+                    offset + (y * row_size)
                     ))
 
     
@@ -252,6 +261,7 @@ class Gameover(State):
 
         self.score_text_surf = self.score_font.render(f'score : {self.prev_state.score}', False, color=(settings.FONT_COLOR))
         self.highscore_text_surface: pygame.Surface = self.score_font.render(f"highscore : {self.game.highscore['manu']}", False, color=settings.FONT_COLOR)
+
 
     def to_menu(self) -> None:
         # stack :               mainmenu > gameplay > gameover
