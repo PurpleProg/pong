@@ -5,21 +5,28 @@ import math  # for bounce angle calc
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, game, group: pygame.sprite.Group, pos: pygame.Vector2) -> None:
+    def __init__(self, game, group: pygame.sprite.Group, pos: pygame.Vector2 | None = None) -> None:
         super().__init__()
 
         self.group = group
         self.group.add(self)
         self.game = game
         self.speed: int = settings.BALL_SPEED
-        self.direction: pygame.Vector2 = pygame.Vector2(random.choice([-1, 1]), -1)
+        self.direction: pygame.Vector2 = pygame.Vector2(0, -1)
         
-        self.pos: pygame.Vector2 = pos
         self.image: pygame.Surface = pygame.image.load('assets/Balls/Glass/Ball_Blue_Glass-32x32.png').convert()
         self.image.set_colorkey('#ff00ff')
+
         self.rect: pygame.Rect = self.image.get_rect()
+        if pos == None:
+            self.pos: pygame.Vector2 = pygame.Vector2(
+                settings.WIDTH/2 - self.rect.width/2, 
+                settings.HEIGHT - settings.HEIGHT/6
+                )
+        else:
+            self.pos: pygame.Vector2 = pos
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
- 
+
 
     def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         '''change the position of the ball'''
@@ -66,36 +73,42 @@ class Ball(pygame.sprite.Sprite):
             self.direction.y = -math.cos(bounce_angle_in_radian)
 
         # bricks
-        for brick in bricks:
-            if brick.rect.colliderect(self.rect):
-                # spawn powerup
-                match random.randint(0, 20):
+        brick_list = bricks.sprites()
+        bricks_that_collide: list = self.rect.collidelistall(brick_list)
+        for brick_index in bricks_that_collide:
+            # spawn powerup
+            match random.randint(0, 20):
+                case 1:
+                    powerups.add(Paddle_growup(self.game, brick_list[brick_index].rect.center))
+                case 2:
+                    powerups.add(Multiple_balls(self.game, brick_list[brick_index].rect.center))
 
-                    case 1:
-                        p = Paddle_growup(self.game, powerups, brick.rect.center)
-                    case 2:
-                        b = Multiple_balls(self.game, powerups, brick.rect.center)
+            bricks.remove(brick_list[brick_index])
+            self.game.stack[-1].bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
 
-                bricks.remove(brick)
-                self.game.stack[-1].bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
-                # X axis
-                if self.direction.x > 0:
-                    delta_x = self.rect.right - brick.rect.left
-                else:
-                    delta_x = brick.rect.right - self.rect.left
-                # Y axis
-                if self.direction.y > 0:
-                    delta_y = self.rect.bottom - brick.rect.top
-                else:
-                    delta_y = brick.rect.bottom - self.rect.top
-                # check incoming direction
-                if abs(delta_x - delta_y) < 10:   # corner (aproximation)
-                    self.direction.x *= -1
-                    self.direction.y *= -1
-                elif delta_x > delta_y:   # comming from the top of the block 
-                    self.direction.y *= -1
-                else:                      # comming from the sides
-                    self.direction.x *= -1
+            ### get the new direction ###
+            # X axis
+            if self.direction.x > 0:
+                delta_x = self.rect.right - brick_list[brick_index].rect.left
+            else:
+                delta_x = brick_list[brick_index].rect.right - self.rect.left
+            # Y axis
+            if self.direction.y > 0:
+                delta_y = self.rect.bottom - brick_list[brick_index].rect.top
+            else:
+                delta_y = brick_list[brick_index].rect.bottom - self.rect.top
+            # check incoming direction
+            if abs(delta_x - delta_y) < 10:   # corner (aproximation)
+                self.direction.x *= -1
+                self.direction.y *= -1
+            elif delta_x > delta_y:   # comming from the top of the block 
+                self.direction.y *= -1
+            else:                      # comming from the sides
+                self.direction.x *= -1
+
+        if len(bricks_that_collide) >= 2:
+            self.direction.y = 1
+            # force going down on double collison
 
         self.direction.normalize_ip()
 
@@ -158,10 +171,10 @@ class Brick(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y) -> None:
         super().__init__()
         self.pos: pygame.Vector2 = pygame.Vector2(pos_x, pos_y)
-        self.image: pygame.Surface = pygame.Surface((settings.BRICK_WIDTH, settings.BRICK_HEIGHT))
-        self.image.fill(settings.BRICK_COLOR)
-
-        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, settings.BRICK_WIDTH, settings.BRICK_HEIGHT)
+        self.image: pygame.Surface = pygame.image.load('assets/Bricks/Colored/Colored_Purple-64x32.png').convert()
+        self.image.set_colorkey('#ffffff')
+        self.rect: pygame.Rect = self.image.get_rect()
+        self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
 
     def render(self, canvas) -> None:
@@ -170,9 +183,8 @@ class Brick(pygame.sprite.Sprite):
 
 class Powerup(pygame.sprite.Sprite):
     '''parent class'''
-    def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
+    def __init__(self, game, pos: tuple) -> None:
         super().__init__()
-        group.add(self)
         self.game = game
         self.active = False
         self.image: pygame.Surface = pygame.Surface(size=(16, 16))
@@ -203,8 +215,8 @@ class Powerup(pygame.sprite.Sprite):
 
 
 class Paddle_growup(Powerup):
-    def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
-        super().__init__(game, group, pos)
+    def __init__(self, game, pos: tuple) -> None:
+        super().__init__(game, pos)
         self.image.fill('#00ffff')
         self.countdown_in_frames = settings.POWERUP_BIG_PADLLE_DURATION * settings.FPS
     
@@ -247,8 +259,8 @@ class Paddle_growup(Powerup):
 
 
 class Multiple_balls(Powerup):
-    def __init__(self, game, group: pygame.sprite.Group, pos: tuple) -> None:
-        super().__init__(game, group, pos)
+    def __init__(self, game, pos: tuple) -> None:
+        super().__init__(game, pos)
     
 
     def powerup(self) -> None:
