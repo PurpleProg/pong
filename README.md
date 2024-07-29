@@ -5,7 +5,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ## TODO
 
-- [ ] improve assests (checkout on itch.io maybe)
+- [x] improve assests (checkout on itch.io maybe)
 - [x] pause screen
 - [ ] animations (maybe)
 - [ ] mouse support (maybe)
@@ -31,7 +31,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] difficultie selection
 - [x] button play
 - [x] button exit
-- [ ] high score (saving data)
+- [x] high score (saving data)
    > _manu hehehe_
 
 ### death screen
