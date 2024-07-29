@@ -237,25 +237,32 @@ class Paddle_growup(Powerup):
 
     def powerup(self) -> None:
         ''' add 20% to the paddle size '''
+        paddle = self.game.stack[-1].paddle
+        
         # center it
-        self.game.stack[-1].paddle.rect.x -= self.game.stack[-1].paddle.rect.width * 0.1
-        self.game.stack[-1].paddle.pos.x = self.game.stack[-1].paddle.rect.x
-        # make it bigger
-        self.game.stack[-1].paddle.rect.width *= 1.2
-        # corect the image
-        self.game.stack[-1].paddle.image = pygame.Surface(size=(self.game.stack[-1].paddle.rect.width, self.game.stack[-1].paddle.rect.height))
-        self.game.stack[-1].paddle.image.fill(settings.PADDLE_COLOR)
+        paddle.pos.x -= paddle.rect.width * 0.1
+        # strech the image
+        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width*1.2, paddle.rect.height))
+        # create a new rect
+        paddle.rect = paddle.image.get_rect()
+        paddle.rect.x = int(paddle.pos.x)
+        paddle.rect.y = int(paddle.pos.y)
+
+        self.game.stack[-1].paddle = paddle
 
 
     def unpowerup(self) -> None: 
-        # change size
-        self.game.stack[-1].paddle.rect.width /= 1.2
+        paddle = self.game.stack[-1].paddle
         # center
-        self.game.stack[-1].paddle.rect.x += self.game.stack[-1].paddle.rect.width * 0.1
-        self.game.stack[-1].paddle.pos.x = self.game.stack[-1].paddle.rect.x
-        # correct image
-        self.game.stack[-1].paddle.image = pygame.Surface(size=(self.game.stack[-1].paddle.rect.width, self.game.stack[-1].paddle.rect.height))
-        self.game.stack[-1].paddle.image.fill(settings.PADDLE_COLOR)
+        paddle.pos.x += paddle.rect.width * 0.1
+        # shrink the image
+        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width/1.2, paddle.rect.height))
+        # create new rect
+        paddle.rect = paddle.image.get_rect()
+        paddle.rect.x = int(paddle.pos.x)
+        paddle.rect.y = int(paddle.pos.y)
+
+        self.game.stack[-1].paddle = paddle
 
 
 class Multiple_balls(Powerup):
