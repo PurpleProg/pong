@@ -70,19 +70,19 @@ class Ball(pygame.sprite.Sprite):
         bricks_that_collide: list = self.rect.collidelistall(brick_list)
         for brick_index in bricks_that_collide:
             # spawn powerup
-            match random.randint(0, 20):
-                case 1:
-                    powerups.add(Paddle_growup(
-                        game=self.game, 
-                        gameplay=self.gameplay, 
-                        pos=brick_list[brick_index].rect.center
-                    ))
-                case 2:
-                    powerups.add(Multiple_balls(
-                        game=self.game, 
-                        gameplay=self.gameplay, 
-                        pos=self.rect.center
-                    ))
+            r = random.randint(1, 100)
+            if r <= settings.POWERUP_PADDLE_CHANCE:
+                powerups.add(Paddle_growup(
+                    game=self.game, 
+                    gameplay=self.gameplay, 
+                    pos=brick_list[brick_index].rect.center
+                ))
+            elif r >= (100-settings.POWERUP_BALL_CHANCE):
+                powerups.add(Multiple_balls(
+                    game=self.game, 
+                    gameplay=self.gameplay, 
+                    pos=self.rect.center
+                ))
 
             bricks.remove(brick_list[brick_index])
             self.gameplay.bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
@@ -229,7 +229,7 @@ class Paddle_growup(Powerup):
                 self.kill()
 
     def powerup(self) -> None:
-        ''' add 20% to the paddle size '''
+        ''' add X% to the paddle size '''
         paddle = self.gameplay.paddle
         
         # center it
@@ -268,6 +268,9 @@ class Multiple_balls(Powerup):
         # be carefull dont modify something you're iterating
         for ball in self.gameplay.balls:
             for _ in range(settings.BALL_MULTIPLYER):
+                if len(self.gameplay.balls.sprites()) >= settings.MAX_BALLS:
+                    # linit exponential balls resulting in lag then crash 
+                    break
                 tmp_grp.add(Ball(
                     game=self.game, 
                     gameplay=self.gameplay, 

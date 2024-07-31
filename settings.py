@@ -6,7 +6,6 @@ Color = NewType('Color', str)
 # cheats
 INVISIBILITY = False
 
-
 # screen
 WIDTH = 1024
 HEIGHT = 512
@@ -29,9 +28,14 @@ FONT_COLOR = Color('#000000')
 
 
 # entities
+MAX_BALLS = 255
 POWERUP_SPEED = 2
 POWERUP_BIG_PADLLE_DURATION = 10  # in second
 BALL_MULTIPLYER = 2  # for every ball spawn X more ball
+
+# percentages
+POWERUP_PADDLE_CHANCE = 10
+POWERUP_BALL_CHANCE = 10
 
 MAX_BOUNCE_ANGLE = 60
 
