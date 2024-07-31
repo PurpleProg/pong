@@ -18,13 +18,14 @@ class Ball(pygame.sprite.Sprite):
         self.image.set_colorkey('#ff00ff')
 
         self.rect: pygame.Rect = self.image.get_rect()
-        if pos == None:
-            self.pos: pygame.Vector2 = pygame.Vector2(
+        if pos is None:
+            self.pos = pygame.Vector2(
                 settings.WIDTH/2 - self.rect.width/2, 
                 settings.HEIGHT - settings.HEIGHT/6
                 )
         else:
-            self.pos: pygame.Vector2 = pos
+            self.pos = pos
+
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
 

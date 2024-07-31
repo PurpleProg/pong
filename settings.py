@@ -1,4 +1,5 @@
 
+
 INVISIBILITY = True
 
 
@@ -8,7 +9,7 @@ WIDTH = 1024
 HEIGHT = 512
 FPS = 60
 
-COUNTDOWN = 3 - 1 # number of second before the gameplay start (starting form 0 so - 1)
+COUNTDOWN = 1 - 1 # number of second before the gameplay start (starting form 0 so - 1)
 
 # BG
 BACKGROUND_COLOR = ('#000000')  # to replace with assets
@@ -18,8 +19,8 @@ MAINMENU_BG_COLOR = '#00ffff'
 
 # default font. There also is a bold and a mono variant.
 FONT_NAME = 'font/PixeloidSans.ttf'
-FONT_COLOR = '#000000'
 FONT_SIZE = 30
+FONT_COLOR = '#000000'
 
 
 # entities
