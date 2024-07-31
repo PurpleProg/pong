@@ -235,7 +235,7 @@ class Paddle_growup(Powerup):
         # center it
         paddle.pos.x -= paddle.rect.width * 0.1
         # strech the image
-        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width*1.2, paddle.rect.height))
+        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width*settings.POWERUP_PADDLE_SIZE, paddle.rect.height))
         # create a new rect
         paddle.rect = paddle.image.get_rect()
         paddle.rect.x = int(paddle.pos.x)
@@ -248,7 +248,7 @@ class Paddle_growup(Powerup):
         # center
         paddle.pos.x += paddle.rect.width * 0.1
         # shrink the image
-        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width/1.2, paddle.rect.height))
+        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width/settings.POWERUP_PADDLE_SIZE, paddle.rect.height))
         # create new rect
         paddle.rect = paddle.image.get_rect()
         paddle.rect.x = int(paddle.pos.x)

@@ -34,6 +34,7 @@ POWERUP_BIG_PADLLE_DURATION = 10  # in second
 BALL_MULTIPLYER = 2  # for every ball spawn X more ball
 
 # percentages
+POWERUP_PADDLE_SIZE = 1.2
 POWERUP_PADDLE_CHANCE = 10
 POWERUP_BALL_CHANCE = 10
 

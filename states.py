@@ -532,11 +532,12 @@ class Difficulties(Menu):
         settings.BALL_SPEED = 6
         settings.PADDLE_SPEED = 7
         settings.POWERUP_SPEED = 5
-        settings.POWERUP_BIG_PADLLE_DURATION = 3
+        settings.POWERUP_BIG_PADLLE_DURATION = 5
         settings.BALL_MULTIPLYER = 1
         settings.MAX_BOUNCE_ANGLE = 120
         settings.POWERUP_PADDLE_CHANCE = 7
         settings.POWERUP_BALL_CHANCE = 3
+        settings.POWERUP_PADDLE_SIZE = 1.1
     
     def normal(self) -> None:
         settings.BALL_SPEED = 5
@@ -547,6 +548,7 @@ class Difficulties(Menu):
         settings.MAX_BOUNCE_ANGLE = 60
         settings.POWERUP_PADDLE_CHANCE = 10
         settings.POWERUP_BALL_CHANCE = 10
+        settings.POWERUP_PADDLE_SIZE = 1.2
     
     def easy(self) -> None:
         settings.BALL_SPEED = 4
@@ -557,3 +559,4 @@ class Difficulties(Menu):
         settings.MAX_BOUNCE_ANGLE = 45
         settings.POWERUP_PADDLE_CHANCE = 25
         settings.POWERUP_BALL_CHANCE = 15
+        settings.POWERUP_PADDLE_SIZE = 1.4
