@@ -1,8 +1,8 @@
-import pygame
 import sys  # for proper exit
-import settings
 import json
 import base64
+import pygame
+import settings
 from states import Mainmenu
 
 
@@ -19,8 +19,8 @@ class Game:
         self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
         # init the stack
-        self.stack: list[State] = []
-        menu = Mainmenu(self)
+        self.stack: list = []
+        Mainmenu(self)
 
         # init global game var
         self.running: bool = True
@@ -37,7 +37,6 @@ class Game:
 
         self.load_highscore()
 
-
     def load_highscore(self) -> None:
         ''' attemp to load  the highscore file and store into self.highscore '''
         try:
@@ -53,12 +52,10 @@ class Game:
                 encoded_data = base64.b64encode(json_data.encode())    # byte like objects
                 highscore.write(encoded_data.decode())   # decode method just convert it to string
 
-
     def main_loop(self) -> None:
         self.event()
         self.udpate()
         self.render()
-
 
     def event(self) -> None:
         '''get event like keyboard press or mouse input and gather them in a dict'''
@@ -101,11 +98,9 @@ class Game:
                         case pygame.K_p:
                             self.keys['p'] = False
                 
-
     def udpate(self) -> None:
         self.stack[-1].update()
         
-
     def render(self) -> None:
         ''' render last state in stack, update screen and limit FPS.'''
 

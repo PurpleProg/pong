@@ -1,11 +1,11 @@
-import pygame
-import settings
-from entitys import Ball, Paddle, Brick
 import sys  # for proper exit
 import json  # for save
 import base64   # for save
 from typing import Callable
 from abc import abstractmethod, ABC
+import pygame
+import settings
+from entitys import Ball, Paddle, Brick
 
 
 def save(score: int) -> None:
@@ -20,12 +20,15 @@ def save(score: int) -> None:
 
 
 class Menu(ABC):
-    '''Parent class of all menus, handel buttons and labels rendering'''
+    ''' Parent class of all menus, handel buttons and labels rendering. 
+    The first button declared is the bottom one. 
+    Exactly one button shall be set selected. 
+    The labels can be placed anywhere '''
 
     class Label(pygame.sprite.Sprite):
-        def __init__(self, text: str, pos: tuple[int, int]) -> None:
+        def __init__(self, text: str, font: pygame.font.Font, pos: tuple[int, int]) -> None:
             self.text: str = text
-            self.font: pygame.font.Font = pygame.font.Font(settings.FONT_NAME, settings.FONT_SIZE)
+            self.font = font
             self.image: pygame.Surface = self.font.render(self.text, False, settings.FONT_COLOR)
             self.rect: pygame.Rect = self.image.get_rect()
             self.rect.center = pos
@@ -59,26 +62,25 @@ class Menu(ABC):
         def render(self, canvas: pygame.Surface, dest: tuple[int, int]) -> None:
             canvas.blit(self.image, dest=dest)
 
-    def __init__(self, game, background_color, transparency: bool = False) -> None:
+    def __init__(self, game, background_color: settings.Color, is_transparent: bool = False) -> None:
         self.canvas: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.game = game
-        self.transparency = transparency
-        self.font = pygame.font.Font('font/PixeloidSans.ttf', 50)
+        self.is_transparent = is_transparent
+        self.font = pygame.font.Font('font/PixeloidSans.ttf', 30)
+        self.bold_font = pygame.font.Font('font/PixeloidSansBold.ttf', 35)
+        self.big_font = pygame.font.Font('font/PixeloidSansBold.ttf', 80)
+
+        # create buttons and labels list for each child
         self.buttons: list[Menu.Button] = []
         self.labels: list[Menu.Label] = []
-        
-        # create a stack
-        self.stack: list[tuple[list[Menu.Button], list[Menu.Label]]] = []
-        self.stack.append
-
 
         # background
         self.background: pygame.Surface = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
         self.background.fill(background_color)
-        if self.transparency is True:
+        if self.is_transparent:
             self.background.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
     
-    def update(self) -> None:         
+    def update(self) -> None:
         # move the selected/focus across buttons
         if self.game.keys['UP']:
             self.game.keys['UP'] = False
@@ -120,7 +122,7 @@ class Menu(ABC):
             button.update()   # update every text button if highlighted or not
 
     def render(self) -> None:
-        if self.transparency is True:
+        if self.is_transparent is True:
             self.canvas = self.game.stack[-2].canvas.copy()
         else:
             self.canvas = self.game.canvas.copy()
@@ -139,33 +141,50 @@ class Menu(ABC):
         # blit the labels
         for label in self.labels:
             label.render(self.canvas)
-            # self.canvas.blit(label.image, label.rect)
 
         self.game.canvas = self.canvas.copy()
 
 
 class Mainmenu(Menu):
     def __init__(self, game) -> None:
-        super().__init__(game, '#00ffff')
+        super().__init__(game, settings.MAINMENU_BACKGROUND_COLOR)
         self.game = game
 
         # enter state
         self.game.stack.append(self)
 
         # init buttons
-        self.buttons.append(Menu.Button('exit', self.exit_game, self.font))
-        self.buttons.append(Menu.Button('play', self.play, self.font, selected=True))
+        self.buttons.append(Menu.Button(
+            text='exit', 
+            fonction=self.exit_game, 
+            font=self.font
+        ))  # exit
+        self.buttons.append(Menu.Button(
+            text='settings', 
+            fonction=self.to_settings, 
+            font=self.font, 
+        ))  # settings
+        self.buttons.append(Menu.Button(
+            text='play', 
+            fonction=self.play, 
+            font=self.font, 
+            selected=True
+        ))  # play
 
         # create labels
-        self.labels.append(Menu.Label('MAIN MENU', pos=(
-            settings.WIDTH//2,
-            settings.HEIGHT//10
-        )))
+        self.labels.append(Menu.Label(
+            text='MAIN MENU', 
+            font=self.big_font, 
+            pos=(settings.WIDTH//2, settings.HEIGHT//10), 
+        ))  # main menu
   
     def exit_game(self) -> None:
         pygame.quit()
         sys.exit()
     
+    def to_settings(self) -> None:
+        Settings(self.game)
+
     def play(self) -> None:
         gameplay = Gameplay(self.game)
 
@@ -187,14 +206,18 @@ class Gameplay():
 
         # create objects
         self.balls: pygame.sprite.Group = pygame.sprite.Group()
-        ball = Ball(self.game, self.balls)
+        self.balls.add(Ball(
+            game=self.game, 
+            gameplay=self, 
+            pos=pygame.Vector2(settings.WIDTH//2, settings.HEIGHT - settings.HEIGHT//8)
+        ))
         self.paddle = Paddle(self.game)
-        self.bricks: pygame.sprite.Group = pygame.sprite.Group()
         self.powerups: pygame.sprite.Group = pygame.sprite.Group()
 
         self.setup_bricks()
 
     def setup_bricks(self) -> None:
+        self.bricks: pygame.sprite.Group = pygame.sprite.Group()
         offset = 25
         gap = 5
         height = int(settings.HEIGHT*0.7)
@@ -209,14 +232,6 @@ class Gameplay():
                     ))
 
     def update(self) -> None:
-        # process keys press
-        if self.game.keys['ESCAPE']:
-            self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
-            Pause(self.game)
-        if self.game.keys['p']:
-            self.game.keys['p'] = False
-            Win(self.game)
-
         # countdown befor start
         if self.countdown_in_frames:
             countdown_in_seconds = self.countdown_in_frames/settings.FPS
@@ -237,6 +252,15 @@ class Gameplay():
                 Win(self.game)   # no return
             if not self.balls.sprites():
                 Gameover(self.game)  # no return
+            
+        # process keys press
+        if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
+            Pause(self.game)
+        if self.game.keys['p']:
+            self.game.keys['p'] = False
+            Win(self.game)
+
 
             # update score
             playtime = self.playtime_in_frames / settings.FPS
@@ -258,9 +282,7 @@ class Gameplay():
 
 class Gameover(Menu):
     def __init__(self, game) -> None:
-        super().__init__(game, '#ff0000')
-        self.game = game
-
+        super().__init__(game, settings.GAMEOVER_BACKGROUND_COLOR)
         # append itself to the stack
         self.game.stack.append(self)
 
@@ -273,24 +295,31 @@ class Gameover(Menu):
         self.buttons.append(Menu.Button(
             text='menu', 
             fonction=self.to_menu, 
-            font=self.font))
+            font=self.font
+        ))  # menu
         self.buttons.append(Menu.Button(
             text='replay', 
             fonction=self.replay, 
             font=self.font, 
-            selected=True))
+            selected=True
+        ))  # replay
 
         # create labels
         self.labels.append(Menu.Label(
             text='GAME OVER', 
-            pos=(settings.WIDTH//2, settings.HEIGHT//10)))
+            font=self.big_font, 
+            pos=(settings.WIDTH//2, settings.HEIGHT//10)
+        ))  # GAME OVER
         self.labels.append(Menu.Label(
             text=f'score : {self.game.stack[-2].score}', 
-            pos=(settings.WIDTH//2, (settings.HEIGHT//16)*11)))
+            font=self.bold_font, 
+            pos=(settings.WIDTH//2, (settings.HEIGHT//16)*11)
+        ))  # score : 99
         self.labels.append(Menu.Label(
             text=f"highscore : {self.game.highscore['manu']}", 
-            pos=(settings.WIDTH//2, (settings.HEIGHT//16)*13)))
-
+            font=self.bold_font, 
+            pos=(settings.WIDTH//2, (settings.HEIGHT//16)*13)
+        ))  # highscore : 9999
 
     def to_menu(self) -> None:
         # stack :               mainmenu > gameplay > gameover
@@ -306,7 +335,7 @@ class Gameover(Menu):
 
 class Win(Menu):
     def __init__(self, game) -> None:
-        super().__init__(game, '#00ff00')
+        super().__init__(game, settings.WIN_BACKGROUND_COLOR)
 
         # append itself to the stack
         game.stack.append(self)
@@ -321,31 +350,35 @@ class Win(Menu):
             text='menu', 
             fonction=self.to_menu, 
             font=self.font, 
-            ))
+        ))  # menu
         self.buttons.append(Menu.Button(
             text='replay', 
             fonction=self.replay, 
             font=self.font, 
             selected=True
-            ))
+        ))  # replay
 
         # create labels
         self.labels.append(Menu.Label(
             text='YOU WON !!!', 
-            pos=(settings.WIDTH//2, settings.HEIGHT//16),
-            ))
+            font=self.big_font, 
+            pos=(settings.WIDTH//2, settings.HEIGHT//10),
+        ))  # YOU WON
         self.labels.append(Menu.Label(
             text=f'score : {self.game.stack[-2].score}', 
+            font=self.bold_font, 
             pos=(settings.WIDTH//2, (settings.HEIGHT//16) * 11),
-            ))
+        ))  # score : 090
         self.labels.append(Menu.Label(
             text=f"highscore : {self.game.highscore['manu']}", 
+            font=self.bold_font, 
             pos=(settings.WIDTH//2, (settings.HEIGHT//16) * 13),
-            ))
+        ))  # highscore
         self.labels.append(Menu.Label(
             text=f"playtime : {self.game.stack[-2].playtime_in_frames/settings.FPS:.2f}",
-            pos=(settings.WIDTH//2, (settings.HEIGHT//16) * 15),
-        ))
+            font=self.bold_font, 
+            pos=(settings.WIDTH//2, int(settings.HEIGHT * (16 / 15))),
+        ))  # playtime
 
     def to_menu(self) -> None:
         self.game.stack.pop()  # back to gameplay
@@ -358,26 +391,39 @@ class Win(Menu):
 
 class Pause(Menu):
     def __init__(self, game) -> None:
-        super().__init__(game, settings.PAUSE_COLOR, transparency=True)
+        super().__init__(game, settings.PAUSE_BACKGROUND_COLOR, is_transparent=True)
 
-        # adddend itself to the stack
+        # append itself to the stack
         self.game.stack.append(self)
         
-        # dont forgot to set ONE button selected
-        # the first button declared here is the bottom one, the last is on top.
+        self.buttons.append(Menu.Button(
+            text='menu', 
+            fonction=self.to_mainmenu, 
+            font=self.font
+        ))  # menu
+        self.buttons.append(Menu.Button(
+            text='settings', 
+            fonction=self.to_settings, 
+            font=self.font
+        ))  # settings
+        self.buttons.append(Menu.Button(
+            text='resume', 
+            fonction=self.resume, 
+            font=self.font, 
+            selected=True
+        ))  # resume
 
-        # menu_button
-        self.buttons.append(Menu.Button('menu', self.to_mainmenu, self.font))
-        # settings_button
-        self.buttons.append(Menu.Button('settings', self.to_settings, self.font))
-        # resume_button
-        self.buttons.append(Menu.Button('resume', self.resume, self.font, selected=True))
-
-        # score
-        self.score_text_surf: pygame.Surface = self.font.render(
+        # labels
+        self.labels.append(Menu.Label(
+            text='Settings', 
+            font=self.big_font, 
+            pos=(settings.WIDTH//2, settings.HEIGHT//10)
+        ))  # settings
+        self.labels.append(Menu.Label(
             text=f'score : {self.game.stack[-2].score}', 
-            antialias=False, 
-            color=(settings.FONT_COLOR))
+            font=self.bold_font, 
+            pos=(settings.WIDTH//2, int(settings.HEIGHT*0.8))
+        ))  # score : 999
 
     def resume(self) -> None:
         # after pause restart a counter
@@ -385,7 +431,7 @@ class Pause(Menu):
         self.game.stack.pop()
 
     def to_settings(self) -> None:
-        raise NotImplementedError
+        Settings(self.game)
 
     def to_mainmenu(self) -> None:
         # the stack :
@@ -394,3 +440,55 @@ class Pause(Menu):
         # >main>gameplay
         self.game.stack.pop()
         # >main
+
+
+class Settings(Menu):
+    def __init__(self, game) -> None:
+        super().__init__(game, settings.SETTINGS_BACKGROUND_COLOR, is_transparent=False)
+        
+        self.game = game
+
+        # append itself to the stack
+        self.game.stack.append(self)
+
+        # create buttons
+        self.buttons.append(Menu.Button(
+            text='Back', 
+            fonction=self.go_back, 
+            font=self.font, 
+            selected=True
+        ))  # back
+        self.buttons.append(Menu.Button(
+            text='sound', 
+            fonction=self.to_sound_settings,
+            font=self.font,
+        ))  # sound
+        self.buttons.append(Menu.Button(
+            text='resolution', 
+            fonction=self.to_resolution_settings, 
+            font=self.font, 
+        ))  # resolution
+        self.buttons.append(Menu.Button(
+            text='difficulties', 
+            fonction=self.to_difficultie_choice, 
+            font=self.font, 
+        ))  # difficultie
+
+        # Title
+        self.labels.append(Menu.Label(
+            text='Settings', 
+            font=self.big_font, 
+            pos=(settings.WIDTH//2, settings.HEIGHT//10)
+        ))  # settings Title
+
+    def to_sound_settings(self) -> None:
+        print('Comming Soon !')
+
+    def to_difficultie_choice(self) -> None:
+        pass
+
+    def to_resolution_settings(self) -> None:
+        pass
+
+    def go_back(self) -> None:
+        self.game.stack.pop()

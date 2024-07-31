@@ -1,7 +1,10 @@
+from typing import NewType
 
 
-INVISIBILITY = True
+Color = NewType('Color', str)
 
+# cheats
+INVISIBILITY = False
 
 
 # screen
@@ -12,20 +15,23 @@ FPS = 60
 COUNTDOWN = 1 - 1 # number of second before the gameplay start (starting form 0 so - 1)
 
 # BG
-BACKGROUND_COLOR = ('#000000')  # to replace with assets
-PAUSE_COLOR = ('#ffff00')
-MAINMENU_BG_COLOR = '#00ffff'
-
+BACKGROUND_COLOR = Color('#000000')  # to replace with assets
+PAUSE_BACKGROUND_COLOR = Color('#ffff00')
+MAINMENU_BACKGROUND_COLOR = Color('#00ffff')
+GAMEOVER_BACKGROUND_COLOR = Color('#ff0000')
+WIN_BACKGROUND_COLOR = Color('#00ff00')
+SETTINGS_BACKGROUND_COLOR = Color('#00ffff')
 
 # default font. There also is a bold and a mono variant.
 FONT_NAME = 'font/PixeloidSans.ttf'
 FONT_SIZE = 30
-FONT_COLOR = '#000000'
+FONT_COLOR = Color('#000000')
 
 
 # entities
 POWERUP_SPEED = 2
 POWERUP_BIG_PADLLE_DURATION = 10  # in second
+BALL_MULTIPLYER = 2  # for every ball spawn X more ball
 
 MAX_BOUNCE_ANGLE = 60
 
