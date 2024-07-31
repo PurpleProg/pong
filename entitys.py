@@ -2,6 +2,7 @@ import pygame
 import settings
 import random
 import math  # for bounce angle calc
+from abc import abstractmethod
 
 
 class Ball(pygame.sprite.Sprite):
@@ -28,7 +29,6 @@ class Ball(pygame.sprite.Sprite):
 
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
-
     def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         '''change the position of the ball'''
 
@@ -41,7 +41,6 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = int(self.pos.y)
 
         self.collide(paddle, bricks, powerups)
-
 
     def collide(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         # walls
@@ -113,7 +112,6 @@ class Ball(pygame.sprite.Sprite):
 
         self.direction.normalize_ip()
 
-
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -133,7 +131,6 @@ class Paddle(pygame.sprite.Sprite):
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.x, self.rect.y = int(self.pos.x), int(self.pos.y)
     
-
     def update(self, powerups: pygame.sprite.Group) -> None:
 
         # update direction with arrows
@@ -163,7 +160,6 @@ class Paddle(pygame.sprite.Sprite):
             self.rect.left = 0
             self.pos.x = self.rect.x
 
-
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -177,7 +173,6 @@ class Brick(pygame.sprite.Sprite):
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
-
     def render(self, canvas) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -189,9 +184,7 @@ class Powerup(pygame.sprite.Sprite):
         self.game = game
         self.active = False
         self.image: pygame.Surface = pygame.Surface(size=(16, 16))
-        self.image.fill('#ffff00')
         self.rect: pygame.Rect = pygame.Rect(pos[0], pos[1], 16, 16)
-
 
     def activate(self) -> None:
         '''make it invisible and apply the powerup'''
@@ -200,16 +193,15 @@ class Powerup(pygame.sprite.Sprite):
         self.active = True
         self.powerup()
 
-
+    @abstractmethod
     def powerup(self) -> None:
-        raise NotImplementedError("this is a parent class and shall not be used as is.")
-
+        pass
 
     def update(self) -> None:
-        self.rect.y += settings.POWERUP_SPEED
-        if self.rect.top > settings.HEIGHT:
-            self.kill()    # i feel bat about this poor guy
-
+        if not self.active:
+            self.rect.y += settings.POWERUP_SPEED
+            if self.rect.top > settings.HEIGHT:
+                self.kill()
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
@@ -220,21 +212,19 @@ class Paddle_growup(Powerup):
         super().__init__(game, pos)
         self.image.fill('#00ffff')
         self.countdown_in_frames = settings.POWERUP_BIG_PADLLE_DURATION * settings.FPS
-    
 
     def update(self) -> None:
         ''' overwrite for use a countdown '''
         if not self.active:
             self.rect.y += settings.POWERUP_SPEED
             if self.rect.top > settings.HEIGHT:
-                self.kill()    # i feel bat about this poor guy
+                self.kill()
         
         if self.active:
             self.countdown_in_frames -= 1
             if self.countdown_in_frames < 0:
                 self.unpowerup()
                 self.kill()
-
 
     def powerup(self) -> None:
         ''' add 20% to the paddle size '''
@@ -250,7 +240,6 @@ class Paddle_growup(Powerup):
         paddle.rect.y = int(paddle.pos.y)
 
         self.game.stack[-1].paddle = paddle
-
 
     def unpowerup(self) -> None: 
         paddle = self.game.stack[-1].paddle
@@ -269,10 +258,10 @@ class Paddle_growup(Powerup):
 class Multiple_balls(Powerup):
     def __init__(self, game, pos: tuple) -> None:
         super().__init__(game, pos)
+        self.image.fill('#ffff00')
     
-
     def powerup(self) -> None:
-        tmp_grp: pygame.sprite.Group = pygame.sprite.Group()
+        tmp_grp = pygame.sprite.Group()
         for ball in self.game.stack[-1].balls:
             for _ in range(2):
                 ball = Ball(self.game, tmp_grp, pos=pygame.Vector2(ball.pos.x + 2, ball.pos.y + 2))

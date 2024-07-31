@@ -3,7 +3,7 @@ import sys  # for proper exit
 import settings
 import json
 import base64
-from states import Mainmenu, State
+from states import Mainmenu
 
 
 class Game:
@@ -21,7 +21,6 @@ class Game:
         # init the stack
         self.stack: list[State] = []
         menu = Mainmenu(self)
-        menu.enter_state()
 
         # init global game var
         self.running: bool = True
