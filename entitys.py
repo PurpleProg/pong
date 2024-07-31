@@ -54,7 +54,7 @@ class Ball(pygame.sprite.Sprite):
 
         # paddle
         if self.rect.colliderect(paddle.rect):
-            self.rect.bottom = paddle.rect.top
+            # self.rect.bottom = paddle.rect.top
 
             # calculate angle
             distance = self.rect.centerx - paddle.rect.centerx
@@ -195,10 +195,10 @@ class Powerup(pygame.sprite.Sprite):
         self.powerup()
 
     @abstractmethod
-    def powerup(self) -> None:
-        pass
+    def powerup(self) -> None: pass
 
     def update(self) -> None:
+        ''' move the powerup down'''
         if not self.active:
             self.rect.y += settings.POWERUP_SPEED
             if self.rect.top > settings.HEIGHT:
@@ -217,17 +217,16 @@ class Paddle_growup(Powerup):
 
     def update(self) -> None:
         ''' overwrite for use a countdown '''
-        if not self.active:
-            self.rect.y += settings.POWERUP_SPEED
-            if self.rect.top > settings.HEIGHT:
-                self.kill()
-        
         if self.active:
             self.countdown_in_frames -= 1
             if self.countdown_in_frames < 0:
                 self.unpowerup()
                 self.kill()
-
+        else:
+            self.rect.y += settings.POWERUP_SPEED
+            if self.rect.top > settings.HEIGHT:
+                self.kill()
+        
     def powerup(self) -> None:
         ''' add X% to the paddle size '''
         paddle = self.gameplay.paddle

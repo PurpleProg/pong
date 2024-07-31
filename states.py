@@ -79,7 +79,11 @@ class Menu(ABC):
         self.background.fill(background_color)
         if self.is_transparent:
             self.background.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
-    
+
+    def go_back(self) -> None:
+        ''' just pop the stack ''' 
+        self.game.stack.pop()
+
     def update(self) -> None:
         # move the selected/focus across buttons
         if self.game.keys['UP']:
@@ -121,11 +125,11 @@ class Menu(ABC):
             # no need to do this every frame
             button.update()   # update every text button if highlighted or not
 
-    def render(self) -> None:
+    def render(self, canvas: pygame.Surface) -> None:
         if self.is_transparent is True:
             self.canvas = self.game.stack[-2].canvas.copy()
         else:
-            self.canvas = self.game.canvas.copy()
+            self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
 
         # blit the background
         self.canvas.blit(self.background, dest=(0, 0))
@@ -142,7 +146,7 @@ class Menu(ABC):
         for label in self.labels:
             label.render(self.canvas)
 
-        self.game.canvas = self.canvas.copy()
+        canvas.blit(self.canvas, dest=(0, 0))
 
 
 class Mainmenu(Menu):
@@ -275,7 +279,7 @@ class Gameplay():
             self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
             self.score = round(self.score)
 
-    def render(self) -> None:
+    def render(self, canvas: pygame.Surface) -> None:
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
         for brick in self.bricks:
             brick.render(self.canvas)
@@ -285,7 +289,7 @@ class Gameplay():
         for ball in self.balls:
             ball.render(self.canvas)
 
-        self.game.canvas = self.canvas
+        canvas.blit(self.canvas, dest=(0, 0))
 
 
 class Gameover(Menu):
@@ -409,11 +413,11 @@ class Pause(Menu):
             fonction=self.to_mainmenu, 
             font=self.font
         ))  # menu
-        self.buttons.append(Menu.Button(
-            text='settings', 
-            fonction=self.to_settings, 
-            font=self.font
-        ))  # settings
+        # self.buttons.append(Menu.Button(
+        #     text='settings', 
+        #     fonction=self.to_settings, 
+        #     font=self.font
+        # ))  # settings
         self.buttons.append(Menu.Button(
             text='resume', 
             fonction=self.resume, 
@@ -438,8 +442,8 @@ class Pause(Menu):
         self.game.stack[-2].countdown_in_frames = settings.COUNTDOWN*settings.FPS
         self.game.stack.pop()
 
-    def to_settings(self) -> None:
-        Settings(self.game)
+    # def to_settings(self) -> None:
+    #     Settings(self.game)
 
     def to_mainmenu(self) -> None:
         # the stack :
@@ -464,7 +468,6 @@ class Settings(Menu):
             text='Back', 
             fonction=self.go_back, 
             font=self.font, 
-            selected=True
         ))  # back
         self.buttons.append(Menu.Button(
             text='sound', 
@@ -475,6 +478,7 @@ class Settings(Menu):
             text='resolution', 
             fonction=self.to_resolution_settings, 
             font=self.font, 
+            selected=True, 
         ))  # resolution
 
         # Title
@@ -488,10 +492,7 @@ class Settings(Menu):
         print('Comming Soon !')
 
     def to_resolution_settings(self) -> None:
-        pass
-
-    def go_back(self) -> None:
-        self.game.stack.pop()
+        Resolution(self.game)
 
 
 class Difficulties(Menu):
@@ -524,9 +525,6 @@ class Difficulties(Menu):
                 font=self.font
             ),  # easy
         ])
-
-    def go_back(self) -> None:
-        self.game.stack.pop()
     
     def hard(self) -> None:
         settings.BALL_SPEED = 6
@@ -538,6 +536,7 @@ class Difficulties(Menu):
         settings.POWERUP_PADDLE_CHANCE = 7
         settings.POWERUP_BALL_CHANCE = 3
         settings.POWERUP_PADDLE_SIZE = 1.1
+        self.go_back()
     
     def normal(self) -> None:
         settings.BALL_SPEED = 5
@@ -549,6 +548,7 @@ class Difficulties(Menu):
         settings.POWERUP_PADDLE_CHANCE = 10
         settings.POWERUP_BALL_CHANCE = 10
         settings.POWERUP_PADDLE_SIZE = 1.2
+        self.go_back()
     
     def easy(self) -> None:
         settings.BALL_SPEED = 4
@@ -560,3 +560,73 @@ class Difficulties(Menu):
         settings.POWERUP_PADDLE_CHANCE = 25
         settings.POWERUP_BALL_CHANCE = 15
         settings.POWERUP_PADDLE_SIZE = 1.4
+        self.go_back()
+
+
+class Resolution(Menu):
+    def __init__(self, game) -> None:
+        super().__init__(game, background_color=settings.SETTINGS_BACKGROUND_COLOR)
+        self.game = game
+        self.game.stack.append(self)
+
+        # buttons
+        self.buttons.append(Menu.Button(
+            text='Back', 
+            fonction=self.go_back, 
+            font=self.font
+        ))
+        self.buttons.append(Menu.Button(
+            text='512x256', 
+            fonction=self.res_512x256, 
+            font=self.font,
+        ))  # 512x256
+        self.buttons.append(Menu.Button(
+            text='1024x512', 
+            fonction=self.res_1024x512, 
+            font=self.font,
+        ))  # 1024x512
+        self.buttons.append(Menu.Button(
+            text='Toggle fullscreen', 
+            fonction=self.toggle_fullscreen, 
+            font=self.font, 
+            selected=True
+        ))  # fullscreen
+
+        # label
+        self.labels.append(Menu.Label(
+            text='Resolutions', 
+            font=self.big_font, 
+            pos=(settings.WIDTH//2, settings.HEIGHT//10)
+        ))  # resolution title
+
+    def toggle_fullscreen(self) -> None:
+        if self.game.fullscreen:
+            self.game.display = pygame.display.set_mode(size=(settings.WIDTH_BACKUP, settings.HEIGHT_BACKUP))
+            settings.WIDTH, settings.HEIGHT = settings.WIDTH_BACKUP, settings.HEIGHT_BACKUP
+            self.game.fullscreen = False
+        else:
+            self.game.display = pygame.display.set_mode(size=(0, 0), flags=pygame.FULLSCREEN)
+            settings.WIDTH, settings.HEIGHT = self.game.display.get_size()
+            self.game.fullscreen = True
+        
+        self.reload_stack()
+        
+    def res_512x256(self) -> None:
+        self.game.display = pygame.display.set_mode(size=(512, 256))
+        settings.WIDTH, settings.HEIGHT = 512, 256
+        self.reload_stack()
+
+    def res_1024x512(self) -> None:
+        self.game.display = pygame.display.set_mode(size=(1024, 512))
+        settings.WIDTH, settings.HEIGHT = 1024, 512
+        self.reload_stack()
+
+    def reload_stack(self) -> None:
+        ''' empty the stack and recreate every items '''
+        #  >mainmenu>settings>resolution
+        self.game.stack.pop()
+        self.game.stack.pop()
+        self.game.stack.pop()
+        Mainmenu(self.game)
+        Settings(self.game)        
+        Resolution(self.game)

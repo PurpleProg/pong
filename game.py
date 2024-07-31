@@ -14,9 +14,9 @@ class Game:
         self.font = pygame.font.Font(settings.FONT_NAME, settings.FONT_SIZE)
         
         # init the display
-        self.display = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
+        self.display: pygame.Surface = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
         pygame.display.set_caption("Pong Game")
-        self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.fullscreen = False
 
         # init the stack
         self.stack: list = []
@@ -104,8 +104,7 @@ class Game:
     def render(self) -> None:
         ''' render last state in stack, update screen and limit FPS.'''
 
-        self.stack[-1].render()
+        self.stack[-1].render(self.display)
 
-        self.display.blit(source=self.canvas, dest=(0, 0))
         pygame.display.flip()
         self.clock.tick(settings.FPS)
