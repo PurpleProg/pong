@@ -12,7 +12,7 @@ WIDTH = 1024
 HEIGHT = 512
 FPS = 60
 
-COUNTDOWN = 1 - 1 # number of second before the gameplay start (starting form 0 so - 1)
+COUNTDOWN = 3 - 1 # number of second before the gameplay start (starting form 0 so - 1)
 
 # BG
 BACKGROUND_COLOR = Color('#000000')  # to replace with assets

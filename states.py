@@ -165,6 +165,11 @@ class Mainmenu(Menu):
             font=self.font, 
         ))  # settings
         self.buttons.append(Menu.Button(
+            text='difficulties', 
+            fonction=self.to_difficulties_choice, 
+            font=self.font, 
+        ))  # difficulties
+        self.buttons.append(Menu.Button(
             text='play', 
             fonction=self.play, 
             font=self.font, 
@@ -181,6 +186,9 @@ class Mainmenu(Menu):
     def exit_game(self) -> None:
         pygame.quit()
         sys.exit()
+    
+    def to_difficulties_choice(self) -> None:
+        Difficulties(self.game)
     
     def to_settings(self) -> None:
         Settings(self.game)
@@ -468,11 +476,6 @@ class Settings(Menu):
             fonction=self.to_resolution_settings, 
             font=self.font, 
         ))  # resolution
-        self.buttons.append(Menu.Button(
-            text='difficulties', 
-            fonction=self.to_difficultie_choice, 
-            font=self.font, 
-        ))  # difficultie
 
         # Title
         self.labels.append(Menu.Label(
@@ -484,11 +487,67 @@ class Settings(Menu):
     def to_sound_settings(self) -> None:
         print('Comming Soon !')
 
-    def to_difficultie_choice(self) -> None:
-        pass
-
     def to_resolution_settings(self) -> None:
         pass
 
     def go_back(self) -> None:
         self.game.stack.pop()
+
+
+class Difficulties(Menu):
+    def __init__(self, game) -> None:
+        super().__init__(game, background_color=settings.SETTINGS_BACKGROUND_COLOR)
+        self.game = game
+        self.game.stack.append(self)
+
+        # buttons
+        self.buttons.extend([
+            Menu.Button(
+                text='Back', 
+                fonction=self.go_back, 
+                font=self.font,
+            ),  # back
+            Menu.Button(
+                text='hard', 
+                fonction=self.hard, 
+                font=self.font
+            ),  # hard
+            Menu.Button(
+                text='Normal', 
+                fonction=self.normal, 
+                font=self.font, 
+                selected=True
+            ),  # normal
+            Menu.Button(
+                text='Easy', 
+                fonction=self.easy, 
+                font=self.font
+            ),  # easy
+        ])
+
+    def go_back(self) -> None:
+        self.game.stack.pop()
+    
+    def hard(self) -> None:
+        settings.BALL_SPEED = 6
+        settings.PADDLE_SPEED = 7
+        settings.POWERUP_SPEED = 5
+        settings.POWERUP_BIG_PADLLE_DURATION = 3
+        settings.BALL_MULTIPLYER = 1
+        settings.MAX_BOUNCE_ANGLE = 120
+    
+    def normal(self) -> None:
+        settings.BALL_SPEED = 5
+        settings.PADDLE_SPEED = 8
+        settings.POWERUP_SPEED = 2
+        settings.POWERUP_BIG_PADLLE_DURATION = 10
+        settings.BALL_MULTIPLYER = 2
+        settings.MAX_BOUNCE_ANGLE = 60
+    
+    def easy(self) -> None:
+        settings.BALL_SPEED = 4
+        settings.PADDLE_SPEED = 8
+        settings.POWERUP_SPEED = 1
+        settings.POWERUP_BIG_PADLLE_DURATION = 15
+        settings.BALL_MULTIPLYER = 3
+        settings.MAX_BOUNCE_ANGLE = 45

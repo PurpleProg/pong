@@ -5,16 +5,16 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ## TODO
 
-- [x] improve assests (checkout on itch.io maybe)
-- [x] pause screen
-- [ ] animations (maybe)
-- [ ] mouse support (maybe)
-- [x] make the ball a circle (not a square wtf)
 - [ ] fix ball sideways paddle collision
+- [ ] sounds
+- [ ] mouse support (maybe)
+- [ ] animations (maybe)
+- [x] pause screen
+- [x] improve assests (checkout on itch.io maybe)
+- [x] make the ball a circle (not a square wtf)
 - [x] the score system
 - [x] fix score timer in pause
 - [x] highscore save system (json ?)
-- [ ] sounds
 - [x] timer before ball start moving
 
 ### powerups :
@@ -22,13 +22,13 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [x] multiple balls
 
 ### difficulties
-- [ ] hard (no powerup, little paddle, fast ball)
+- [x] hard (no powerup, little paddle, fast ball)
 - [x] normal (idk it's hard to balence)
-- [ ] noob (lots of powerup, big paddle, slow ball)
+- [x] noob (lots of powerup, big paddle, slow ball)
 
 ### menu UI :
 - [ ] background image
-- [ ] difficultie selection
+- [x] difficultie selection
 - [x] button play
 - [x] button exit
 - [x] high score (saving data)
@@ -53,8 +53,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [x] quit to mainmenu
 
 ### settings :
-- [ ] maybe try a nested stack here for keeping track of the menus
 - [ ] bindings
-- [ ] sound volume
 - [ ] game speed
+- [x] sound volume
 
