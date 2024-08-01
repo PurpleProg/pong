@@ -20,7 +20,7 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [ ] powerups (separate action and the actual thing that falls off)
 - [ ] fix ball sideways paddle collision
 - [ ] brick auto spacing (already good but can be improved)
-- [ ] makes labels updatable (fix score always zero)
+- [x] makes labels updatable (fix score always zero)
 
 ### powerups :
 - [x] paddle size

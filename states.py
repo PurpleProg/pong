@@ -153,6 +153,108 @@ class Menu(ABC):
         canvas.blit(self.canvas, dest=(0, 0))
 
 
+class Gameplay():
+    def __init__(self, game) -> None:
+        self.game = game
+        
+        # add itself to the stack
+        self.game.stack.append(self)
+
+        self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.score: float = 0.0
+        self.bricks_breaked = 0
+        self.playtime_in_frames = 0
+
+        # timer
+        self.countdown_in_frames = settings.COUNTDOWN*settings.FPS
+
+        # create objects
+        self.balls: pygame.sprite.Group = pygame.sprite.Group()
+        self.balls.add(Ball(
+            game=self.game, 
+            gameplay=self, 
+            pos=pygame.Vector2(settings.WIDTH//2, settings.HEIGHT - settings.HEIGHT//8)
+        ))
+        self.paddle = Paddle(self.game)
+        self.powerups: pygame.sprite.Group = pygame.sprite.Group()
+
+        self.setup_bricks()
+
+    def setup_bricks(self) -> None:
+        self.bricks: pygame.sprite.Group = pygame.sprite.Group()
+        
+        gap = 5
+        height = int(settings.HEIGHT*0.6)
+
+        # to get width and height
+        brick = Brick(0, 0)
+        
+        row_size = brick.rect.height + gap
+        column_size = brick.rect.width + gap
+
+        number_of_columns = settings.WIDTH // column_size
+        number_of_rows = height // row_size
+
+        used_width = (number_of_columns * column_size) - gap
+        used_height = (number_of_rows * row_size) - gap
+
+        x_offset = (settings.WIDTH - used_width) // 2
+        # y_offset = (height - used_height) // 2
+        y_offset = row_size * min(((settings.HEIGHT * 0.1) // row_size), 3)
+        
+        for y in range(number_of_rows):
+            for x in range(number_of_columns):
+                self.bricks.add(Brick(
+                    x_offset + (x * column_size),
+                    y_offset + (y * row_size)
+                    ))
+
+    def update(self) -> None:
+        # countdown befor start
+        if self.countdown_in_frames:
+            # countdown_in_seconds = self.countdown_in_frames/settings.FPS
+            # if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
+                # print(countdown_in_seconds)
+            self.countdown_in_frames -= 1
+        # main updates
+        else:
+            self.playtime_in_frames += 1
+
+            # update score
+            playtime = self.playtime_in_frames / settings.FPS
+            self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
+
+            self.powerups.update()
+            self.paddle.update(self.powerups)
+            for ball in self.balls:
+                ball.update(self.paddle, self.bricks, self.powerups)
+            # check win and lose
+            if not self.bricks.sprites():
+                Win(self.game, self.score)   # no return
+            if not self.balls.sprites():
+                Gameover(self.game, score=self.score)  # no return
+            
+        # process keys press
+        if self.game.keys['ESCAPE']:
+            self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
+            Pause(self.game, self)
+        if self.game.keys['p']:
+            self.game.keys['p'] = False
+            Win(self.game, self.score)
+
+    def render(self, canvas: pygame.Surface) -> None:
+        self.canvas.fill(color=settings.BACKGROUND_COLOR)
+        for brick in self.bricks:
+            brick.render(self.canvas)
+        for powerup in self.powerups:
+            powerup.render(self.canvas)
+        self.paddle.render(self.canvas)
+        for ball in self.balls:
+            ball.render(self.canvas)
+
+        canvas.blit(self.canvas, dest=(0, 0))
+
+
 class Mainmenu(Menu):
     def __init__(self, game) -> None:
         super().__init__(game, settings.MAINMENU_BACKGROUND_COLOR)
@@ -202,95 +304,7 @@ class Mainmenu(Menu):
         Settings(self.game)
 
     def play(self) -> None:
-        gameplay = Gameplay(self.game)
-
-
-class Gameplay():
-    def __init__(self, game) -> None:
-        self.game = game
-        
-        # add itself to the stack
-        self.game.stack.append(self)
-
-        self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
-        self.score: float = 0.0
-        self.bricks_breaked = 0
-        self.playtime_in_frames = 0
-
-        # timer
-        self.countdown_in_frames = settings.COUNTDOWN*settings.FPS
-
-        # create objects
-        self.balls: pygame.sprite.Group = pygame.sprite.Group()
-        self.balls.add(Ball(
-            game=self.game, 
-            gameplay=self, 
-            pos=pygame.Vector2(settings.WIDTH//2, settings.HEIGHT - settings.HEIGHT//8)
-        ))
-        self.paddle = Paddle(self.game)
-        self.powerups: pygame.sprite.Group = pygame.sprite.Group()
-
-        self.setup_bricks()
-
-    def setup_bricks(self) -> None:
-        self.bricks: pygame.sprite.Group = pygame.sprite.Group()
-        offset = 25
-        gap = 5
-        height = int(settings.HEIGHT*0.7)
-        brick = Brick(0, 0)
-        row_size = brick.rect.height+gap
-        column_size = brick.rect.width+gap
-        for y in range(height//row_size):
-            for x in range(settings.WIDTH//column_size):
-                self.bricks.add(Brick(
-                    offset + (x * column_size),
-                    offset + (y * row_size)
-                    ))
-
-    def update(self) -> None:
-        # countdown befor start
-        if self.countdown_in_frames:
-            # countdown_in_seconds = self.countdown_in_frames/settings.FPS
-            # if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
-                # print(countdown_in_seconds)
-            self.countdown_in_frames -= 1
-        # main updates
-        else:
-            self.playtime_in_frames += 1
-
-            # update score
-            playtime = self.playtime_in_frames / settings.FPS
-            self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
-
-            self.powerups.update()
-            self.paddle.update(self.powerups)
-            for ball in self.balls:
-                ball.update(self.paddle, self.bricks, self.powerups)
-            # check win and lose
-            if not self.bricks.sprites():
-                Win(self.game, self.score)   # no return
-            if not self.balls.sprites():
-                Gameover(self.game, score=self.score)  # no return
-            
-        # process keys press
-        if self.game.keys['ESCAPE']:
-            self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
-            Pause(self.game, self)
-        if self.game.keys['p']:
-            self.game.keys['p'] = False
-            Win(self.game, self.score)
-
-    def render(self, canvas: pygame.Surface) -> None:
-        self.canvas.fill(color=settings.BACKGROUND_COLOR)
-        for brick in self.bricks:
-            brick.render(self.canvas)
-        for powerup in self.powerups:
-            powerup.render(self.canvas)
-        self.paddle.render(self.canvas)
-        for ball in self.balls:
-            ball.render(self.canvas)
-
-        canvas.blit(self.canvas, dest=(0, 0))
+        Gameplay(self.game)
 
 
 class Gameover(Menu):
