@@ -1,3 +1,8 @@
+"""
+main file of a breakout game
+Copyright me
+Licence GPL-3+
+"""
 import sys
 import json
 import base64
@@ -6,13 +11,17 @@ import states
 import settings
 
 class Game:
+    """
+    main class of breakout
+    contain some global game var (like display)
+    """
     def __init__(self) -> None:
         pygame.init()
 
         # font
         pygame.font.init()
         self.font = pygame.font.Font(settings.FONT_NAME, settings.FONT_SIZE)
-        
+
         # init the display
         pygame.display.init()
         self.display: pygame.Surface = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
@@ -98,10 +107,10 @@ class Game:
                             self.keys['LEFT'] = False
                         case pygame.K_p:
                             self.keys['p'] = False
-                
+   
     def udpate(self) -> None:
         self.stack[-1].update()
-        
+
     def render(self) -> None:
         ''' render last state in stack, update screen and limit FPS.'''
 
@@ -112,6 +121,7 @@ class Game:
 
 
 def main():
+    ''' main entrypoint '''
     game = Game()
 
     while game.running:

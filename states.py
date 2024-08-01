@@ -1,8 +1,9 @@
+''' define game states and menus '''
 import sys
 import json
 import base64
 from typing import Callable
-from abc import abstractmethod, ABC
+from abc import ABC
 import pygame
 from entitys import Ball, Paddle, Brick
 import settings

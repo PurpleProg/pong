@@ -1,3 +1,4 @@
+''' constants and global var '''
 from typing import NewType
 
 
