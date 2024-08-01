@@ -1,11 +1,11 @@
-import sys  # for proper exit
-import json  # for save
-import base64   # for save
+import sys
+import json
+import base64
 from typing import Callable
 from abc import abstractmethod, ABC
 import pygame
-import settings
 from entitys import Ball, Paddle, Brick
+import settings
 
 
 def save(score: int) -> None:
