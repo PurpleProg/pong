@@ -1,32 +1,26 @@
+import math  # for bounce angle calc
+import random
+from abc import abstractmethod
 import pygame
 import settings
-import random
-import math  # for bounce angle calc
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, game, group: pygame.sprite.Group, pos: pygame.Vector2 | None = None) -> None:
+    def __init__(self, game, gameplay, pos: pygame.Vector2) -> None:
         super().__init__()
 
-        self.group = group
-        self.group.add(self)
         self.game = game
+        self.gameplay = gameplay
         self.speed: int = settings.BALL_SPEED
-        self.direction: pygame.Vector2 = pygame.Vector2(0, -1)
+        self.direction: pygame.Vector2 = pygame.Vector2(random.uniform(-1, 1), -1)
         
         self.image: pygame.Surface = pygame.image.load('assets/Balls/Glass/Ball_Blue_Glass-32x32.png').convert()
         self.image.set_colorkey('#ff00ff')
 
         self.rect: pygame.Rect = self.image.get_rect()
-        if pos == None:
-            self.pos: pygame.Vector2 = pygame.Vector2(
-                settings.WIDTH/2 - self.rect.width/2, 
-                settings.HEIGHT - settings.HEIGHT/6
-                )
-        else:
-            self.pos: pygame.Vector2 = pos
-        self.rect.topleft = int(self.pos.x), int(self.pos.y)
+        self.pos = pos
 
+        self.rect.center = int(self.pos.x), int(self.pos.y)
 
     def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         '''change the position of the ball'''
@@ -40,7 +34,6 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = int(self.pos.y)
 
         self.collide(paddle, bricks, powerups)
-
 
     def collide(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
         # walls
@@ -61,7 +54,7 @@ class Ball(pygame.sprite.Sprite):
 
         # paddle
         if self.rect.colliderect(paddle.rect):
-            self.rect.bottom = paddle.rect.top
+            # self.rect.bottom = paddle.rect.top
 
             # calculate angle
             distance = self.rect.centerx - paddle.rect.centerx
@@ -77,14 +70,22 @@ class Ball(pygame.sprite.Sprite):
         bricks_that_collide: list = self.rect.collidelistall(brick_list)
         for brick_index in bricks_that_collide:
             # spawn powerup
-            match random.randint(0, 20):
-                case 1:
-                    powerups.add(Paddle_growup(self.game, brick_list[brick_index].rect.center))
-                case 2:
-                    powerups.add(Multiple_balls(self.game, brick_list[brick_index].rect.center))
+            r = random.randint(1, 100)
+            if r <= settings.POWERUP_PADDLE_CHANCE:
+                powerups.add(Paddle_growup(
+                    game=self.game, 
+                    gameplay=self.gameplay, 
+                    pos=brick_list[brick_index].rect.center
+                ))
+            elif r >= (100-settings.POWERUP_BALL_CHANCE):
+                powerups.add(Multiple_balls(
+                    game=self.game, 
+                    gameplay=self.gameplay, 
+                    pos=self.rect.center
+                ))
 
             bricks.remove(brick_list[brick_index])
-            self.game.stack[-1].bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
+            self.gameplay.bricks_breaked += 1    # assuming that the ball is ONLY used from gameplay
 
             ### get the new direction ###
             # X axis
@@ -112,7 +113,6 @@ class Ball(pygame.sprite.Sprite):
 
         self.direction.normalize_ip()
 
-
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -132,7 +132,6 @@ class Paddle(pygame.sprite.Sprite):
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.x, self.rect.y = int(self.pos.x), int(self.pos.y)
     
-
     def update(self, powerups: pygame.sprite.Group) -> None:
 
         # update direction with arrows
@@ -162,7 +161,6 @@ class Paddle(pygame.sprite.Sprite):
             self.rect.left = 0
             self.pos.x = self.rect.x
 
-
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -176,7 +174,6 @@ class Brick(pygame.sprite.Sprite):
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
-
     def render(self, canvas) -> None:
         canvas.blit(self.image, self.rect)
 
@@ -188,9 +185,7 @@ class Powerup(pygame.sprite.Sprite):
         self.game = game
         self.active = False
         self.image: pygame.Surface = pygame.Surface(size=(16, 16))
-        self.image.fill('#ffff00')
         self.rect: pygame.Rect = pygame.Rect(pos[0], pos[1], 16, 16)
-
 
     def activate(self) -> None:
         '''make it invisible and apply the powerup'''
@@ -199,84 +194,87 @@ class Powerup(pygame.sprite.Sprite):
         self.active = True
         self.powerup()
 
-
-    def powerup(self) -> None:
-        raise NotImplementedError("this is a parent class and shall not be used as is.")
-
+    @abstractmethod
+    def powerup(self) -> None: pass
 
     def update(self) -> None:
-        self.rect.y += settings.POWERUP_SPEED
-        if self.rect.top > settings.HEIGHT:
-            self.kill()    # i feel bat about this poor guy
-
+        ''' move the powerup down'''
+        if not self.active:
+            self.rect.y += settings.POWERUP_SPEED
+            if self.rect.top > settings.HEIGHT:
+                self.kill()
 
     def render(self, canvas: pygame.Surface) -> None:
         canvas.blit(self.image, self.rect)
 
 
 class Paddle_growup(Powerup):
-    def __init__(self, game, pos: tuple) -> None:
+    def __init__(self, game, gameplay, pos: tuple) -> None:
         super().__init__(game, pos)
+        self.gameplay = gameplay
         self.image.fill('#00ffff')
         self.countdown_in_frames = settings.POWERUP_BIG_PADLLE_DURATION * settings.FPS
-    
 
     def update(self) -> None:
         ''' overwrite for use a countdown '''
-        if not self.active:
-            self.rect.y += settings.POWERUP_SPEED
-            if self.rect.top > settings.HEIGHT:
-                self.kill()    # i feel bat about this poor guy
-        
         if self.active:
             self.countdown_in_frames -= 1
             if self.countdown_in_frames < 0:
                 self.unpowerup()
                 self.kill()
-
-
+        else:
+            self.rect.y += settings.POWERUP_SPEED
+            if self.rect.top > settings.HEIGHT:
+                self.kill()
+        
     def powerup(self) -> None:
-        ''' add 20% to the paddle size '''
-        paddle = self.game.stack[-1].paddle
+        ''' add X% to the paddle size '''
+        paddle = self.gameplay.paddle
         
         # center it
         paddle.pos.x -= paddle.rect.width * 0.1
         # strech the image
-        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width*1.2, paddle.rect.height))
+        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width*settings.POWERUP_PADDLE_SIZE, paddle.rect.height))
         # create a new rect
         paddle.rect = paddle.image.get_rect()
         paddle.rect.x = int(paddle.pos.x)
         paddle.rect.y = int(paddle.pos.y)
 
-        self.game.stack[-1].paddle = paddle
-
+        self.gameplay.paddle = paddle
 
     def unpowerup(self) -> None: 
-        paddle = self.game.stack[-1].paddle
+        paddle = self.gameplay.paddle
         # center
         paddle.pos.x += paddle.rect.width * 0.1
         # shrink the image
-        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width/1.2, paddle.rect.height))
+        paddle.image = pygame.transform.scale(paddle.image, size=(paddle.rect.width/settings.POWERUP_PADDLE_SIZE, paddle.rect.height))
         # create new rect
         paddle.rect = paddle.image.get_rect()
         paddle.rect.x = int(paddle.pos.x)
         paddle.rect.y = int(paddle.pos.y)
 
-        self.game.stack[-1].paddle = paddle
+        self.gameplay.paddle = paddle
 
 
 class Multiple_balls(Powerup):
-    def __init__(self, game, pos: tuple) -> None:
+    def __init__(self, game, gameplay, pos: tuple) -> None:
         super().__init__(game, pos)
+        self.image.fill('#ffff00')
+        self.gameplay = gameplay
     
-
     def powerup(self) -> None:
         tmp_grp: pygame.sprite.Group = pygame.sprite.Group()
-        for ball in self.game.stack[-1].balls:
-            for _ in range(2):
-                ball = Ball(self.game, tmp_grp, pos=pygame.Vector2(ball.pos.x + 2, ball.pos.y + 2))
-                ball.direction = pygame.Vector2(random.choice([-1, 1]), random.choice([-1, 1]))
+        # be carefull dont modify something you're iterating
+        for ball in self.gameplay.balls:
+            for _ in range(settings.BALL_MULTIPLYER):
+                if len(self.gameplay.balls.sprites()) >= settings.MAX_BALLS:
+                    # linit exponential balls resulting in lag then crash 
+                    break
+                tmp_grp.add(Ball(
+                    game=self.game, 
+                    gameplay=self.gameplay, 
+                    pos=pygame.Vector2(ball.pos.x, ball.pos.y)))
         for ball in tmp_grp:
-            self.game.stack[-1].balls.add(ball)
+            self.gameplay.balls.add(ball)
         
         self.kill()

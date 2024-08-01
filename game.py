@@ -1,9 +1,9 @@
-import pygame
 import sys  # for proper exit
-import settings
 import json
 import base64
-from states import Mainmenu, State
+import pygame
+import settings
+from states import Mainmenu
 
 
 class Game:
@@ -12,15 +12,15 @@ class Game:
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.Font(settings.FONT_NAME, settings.FONT_SIZE)
-        # display
-        self.display = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
+        
+        # init the display
+        self.display: pygame.Surface = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
         pygame.display.set_caption("Pong Game")
-        self.canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
+        self.fullscreen = False
 
-        # init a stack
-        self.stack: list[State] = []
-        menu = Mainmenu(self)
-        menu.enter_state()
+        # init the stack
+        self.stack: list = []
+        Mainmenu(self)
 
         # init global game var
         self.running: bool = True
@@ -34,6 +34,11 @@ class Game:
             'LEFT': False,
             'p': False,
         }
+
+        self.load_highscore()
+
+    def load_highscore(self) -> None:
+        ''' attemp to load  the highscore file and store into self.highscore '''
         try:
             with open('highscore', 'r') as highscore_file:
                 encoded_json: str = highscore_file.read()
@@ -47,12 +52,10 @@ class Game:
                 encoded_data = base64.b64encode(json_data.encode())    # byte like objects
                 highscore.write(encoded_data.decode())   # decode method just convert it to string
 
-        
     def main_loop(self) -> None:
         self.event()
         self.udpate()
         self.render()
-
 
     def event(self) -> None:
         '''get event like keyboard press or mouse input and gather them in a dict'''
@@ -95,16 +98,13 @@ class Game:
                         case pygame.K_p:
                             self.keys['p'] = False
                 
-
     def udpate(self) -> None:
         self.stack[-1].update()
         
-
     def render(self) -> None:
-        '''draw stuff, update screen and limit FPS.'''
+        ''' render last state in stack, update screen and limit FPS.'''
 
-        self.stack[-1].render()
+        self.stack[-1].render(self.display)
 
-        self.display.blit(source=self.canvas, dest=(0, 0))
         pygame.display.flip()
         self.clock.tick(settings.FPS)
