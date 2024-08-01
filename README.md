@@ -18,8 +18,9 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### FIXES : 
 - [ ] powerups (separate action and the actual thing that falls off)
+- [ ] fix ball double brick collision
 - [ ] fix ball sideways paddle collision
-- [ ] brick auto spacing (already good but can be improved)
+- [x] brick auto spacing (already good but can be improved)
 - [x] makes labels updatable (fix score always zero)
 
 ### powerups :
