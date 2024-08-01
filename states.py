@@ -8,10 +8,10 @@ from entitys import Ball, Paddle, Brick
 import settings
 
 
-def save(score: int) -> None:
+def save(score: float) -> None:
     ''' save the highscore to file '''
     score_data = {
-        'manu': score
+        'manu': int(score)
     }
     score_json: str = json.dumps(score_data)
     encoded_json: str = base64.b64encode(score_json.encode()).decode()
@@ -427,7 +427,7 @@ class Pause(Menu):
 
         # labels
         self.labels.append(Menu.Label(
-            text='Settings', 
+            text='Pause', 
             font=self.big_font, 
             pos=(settings.WIDTH//2, settings.HEIGHT//10)
         ))  # settings

@@ -16,7 +16,7 @@ HEIGHT_BACKUP = HEIGHT
 
 COUNTDOWN = 1 # number of second before the gameplay start 
 
-# BG
+# BACKGROUND COLORS
 BACKGROUND_COLOR = Color('#000000')  # to replace with assets
 PAUSE_BACKGROUND_COLOR = Color('#ffff00')
 MAINMENU_BACKGROUND_COLOR = Color('#00ffff')
@@ -31,9 +31,16 @@ FONT_COLOR = Color('#000000')
 
 
 # entities
-MAX_BALLS = 255
-POWERUP_SPEED = 2
+MAX_BALLS = 50
+
+
+BALL_RADIUS = 8
+BRICK_SCORE = 10
+
+# those are change for each difficulties, default is normal difficultie.
+####################################################################
 POWERUP_BIG_PADLLE_DURATION = 10  # in second
+POWERUP_SPEED = 2
 BALL_MULTIPLYER = 2  # for every ball spawn X more ball
 
 # percentages
@@ -44,8 +51,4 @@ POWERUP_BALL_CHANCE = 10
 MAX_BOUNCE_ANGLE = 60
 
 BALL_SPEED = 5
-BALL_RADIUS = 8
-
 PADDLE_SPEED = 8
-
-BRICK_SCORE = 10
