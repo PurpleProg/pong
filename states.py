@@ -27,12 +27,16 @@ class Menu(ABC):
 
     class Label(pygame.sprite.Sprite):
         def __init__(self, text: str, font: pygame.font.Font, pos: tuple[int, int]) -> None:
-            self.text: str = text
             self.font = font
-            self.image: pygame.Surface = self.font.render(self.text, False, settings.FONT_COLOR)
-            self.rect: pygame.Rect = self.image.get_rect()
-            self.rect.center = pos
+            self.pos = pos
+
+            self.update(new_text=text)
         
+        def update(self, new_text: str) -> None:
+            self.image: pygame.Surface = self.font.render(new_text, False, settings.FONT_COLOR)
+            self.rect: pygame.Rect = self.image.get_rect()
+            self.rect.center = self.pos
+
         def render(self, canvas: pygame.Surface) -> None:
             canvas.blit(self.image, self.rect)
 
@@ -246,14 +250,17 @@ class Gameplay():
     def update(self) -> None:
         # countdown befor start
         if self.countdown_in_frames:
-            countdown_in_seconds = self.countdown_in_frames/settings.FPS
-            if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
-                # print(countdown_in_seconds)    # should re-use this in the UI somehow
-                pass
+            # countdown_in_seconds = self.countdown_in_frames/settings.FPS
+            # if countdown_in_seconds == int(countdown_in_seconds):    # basicly print 3, 2, 1, 0!
+                # print(countdown_in_seconds)
             self.countdown_in_frames -= 1
         # main updates
         else:
             self.playtime_in_frames += 1
+
+            # update score
+            playtime = self.playtime_in_frames / settings.FPS
+            self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
 
             self.powerups.update()
             self.paddle.update(self.powerups)
@@ -261,23 +268,17 @@ class Gameplay():
                 ball.update(self.paddle, self.bricks, self.powerups)
             # check win and lose
             if not self.bricks.sprites():
-                Win(self.game)   # no return
+                Win(self.game, self.score)   # no return
             if not self.balls.sprites():
-                Gameover(self.game)  # no return
+                Gameover(self.game, score=self.score)  # no return
             
         # process keys press
         if self.game.keys['ESCAPE']:
             self.game.keys['ESCAPE'] = False   # prevente the pause to immediatly quit
-            Pause(self.game)
+            Pause(self.game, self)
         if self.game.keys['p']:
             self.game.keys['p'] = False
-            Win(self.game)
-
-
-            # update score
-            playtime = self.playtime_in_frames / settings.FPS
-            self.score = (self.bricks_breaked * settings.BRICK_SCORE) - playtime
-            self.score = round(self.score)
+            Win(self.game, self.score)
 
     def render(self, canvas: pygame.Surface) -> None:
         self.canvas.fill(color=settings.BACKGROUND_COLOR)
@@ -293,15 +294,16 @@ class Gameplay():
 
 
 class Gameover(Menu):
-    def __init__(self, game) -> None:
+    def __init__(self, game, score: float) -> None:
         super().__init__(game, settings.GAMEOVER_BACKGROUND_COLOR)
         # append itself to the stack
         self.game.stack.append(self)
 
         # save score
-        if (self.game.stack[-2].score > self.game.highscore['manu']):
-            self.game.highscore['manu'] = self.game.stack[-2].score
-            save(self.game.stack[-2].score)
+        self.score = score
+        if (self.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.score
+            save(self.score)
 
         # create buttons
         self.buttons.append(Menu.Button(
@@ -323,7 +325,7 @@ class Gameover(Menu):
             pos=(settings.WIDTH//2, settings.HEIGHT//10)
         ))  # GAME OVER
         self.labels.append(Menu.Label(
-            text=f'score : {self.game.stack[-2].score}', 
+            text=f'score : {int(self.score)}', 
             font=self.bold_font, 
             pos=(settings.WIDTH//2, (settings.HEIGHT//16)*11)
         ))  # score : 99
@@ -346,16 +348,17 @@ class Gameover(Menu):
 
 
 class Win(Menu):
-    def __init__(self, game) -> None:
+    def __init__(self, game, score: float) -> None:
         super().__init__(game, settings.WIN_BACKGROUND_COLOR)
+        self.score = score
 
         # append itself to the stack
         game.stack.append(self)
 
         # save score
-        if (self.game.stack[-2].score > self.game.highscore['manu']):
-            self.game.highscore['manu'] = self.game.stack[-2].score
-            save(self.game.stack[-2].score)
+        if (self.score > self.game.highscore['manu']):
+            self.game.highscore['manu'] = self.score
+            save(self.score)
 
         # create buttons
         self.buttons.append(Menu.Button(
@@ -377,7 +380,7 @@ class Win(Menu):
             pos=(settings.WIDTH//2, settings.HEIGHT//10),
         ))  # YOU WON
         self.labels.append(Menu.Label(
-            text=f'score : {self.game.stack[-2].score}', 
+            text=f'score : {int(self.score)}', 
             font=self.bold_font, 
             pos=(settings.WIDTH//2, (settings.HEIGHT//16) * 11),
         ))  # score : 090
@@ -389,7 +392,7 @@ class Win(Menu):
         self.labels.append(Menu.Label(
             text=f"playtime : {self.game.stack[-2].playtime_in_frames/settings.FPS:.2f}",
             font=self.bold_font, 
-            pos=(settings.WIDTH//2, int(settings.HEIGHT * (16 / 15))),
+            pos=(settings.WIDTH//2, int(settings.HEIGHT * (15 / 16))),
         ))  # playtime
 
     def to_menu(self) -> None:
@@ -402,8 +405,10 @@ class Win(Menu):
 
 
 class Pause(Menu):
-    def __init__(self, game) -> None:
+    def __init__(self, game, gameplay: Gameplay) -> None:
         super().__init__(game, settings.PAUSE_BACKGROUND_COLOR, is_transparent=True)
+
+        self.gameplay = gameplay
 
         # append itself to the stack
         self.game.stack.append(self)
@@ -413,11 +418,6 @@ class Pause(Menu):
             fonction=self.to_mainmenu, 
             font=self.font
         ))  # menu
-        # self.buttons.append(Menu.Button(
-        #     text='settings', 
-        #     fonction=self.to_settings, 
-        #     font=self.font
-        # ))  # settings
         self.buttons.append(Menu.Button(
             text='resume', 
             fonction=self.resume, 
@@ -432,14 +432,14 @@ class Pause(Menu):
             pos=(settings.WIDTH//2, settings.HEIGHT//10)
         ))  # settings
         self.labels.append(Menu.Label(
-            text=f'score : {self.game.stack[-2].score}', 
+            text=f'score : {int(self.gameplay.score)}', 
             font=self.bold_font, 
             pos=(settings.WIDTH//2, int(settings.HEIGHT*0.8))
         ))  # score : 999
 
     def resume(self) -> None:
         # after pause restart a counter
-        self.game.stack[-2].countdown_in_frames = settings.COUNTDOWN*settings.FPS
+        self.gameplay.countdown_in_frames = settings.COUNTDOWN*settings.FPS
         self.game.stack.pop()
 
     # def to_settings(self) -> None:
