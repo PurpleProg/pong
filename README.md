@@ -5,7 +5,6 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ## TODO
 
-- [ ] fix ball sideways paddle collision
 - [ ] sounds
 - [ ] mouse support (maybe)
 - [ ] animations (maybe)
@@ -16,6 +15,12 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [x] fix score timer in pause
 - [x] highscore save system (json ?)
 - [x] timer before ball start moving
+
+### FIXES : 
+- [ ] powerups (separate action and the actual thing that falls off)
+- [ ] fix ball sideways paddle collision
+- [ ] brick auto spacing (already good but can be improved)
+- [ ] makes labels updatable (fix score always zero)
 
 ### powerups :
 - [x] paddle size
