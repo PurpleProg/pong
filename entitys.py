@@ -6,7 +6,7 @@ import pygame
 import settings
 
 
-class Ball(pygame.sprite.Sprite):
+class Ball:
     """ ball class, collide with other entities """
     def __init__(self, game, gameplay, pos: pygame.Vector2) -> None:
         super().__init__()
@@ -24,13 +24,16 @@ class Ball(pygame.sprite.Sprite):
         self.rect: pygame.Rect = self.image.get_rect()
         self.pos = pos
 
-        self.rect.center = int(self.pos.x), int(self.pos.y)
+        self.rect.centerx = int(self.pos.x)
+        self.rect.centery = int(self.pos.y)
 
-    def update(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
+    def update(
+        self,
+        paddle,
+        bricks: pygame.sprite.Group,
+        powerups: pygame.sprite.Group
+    ) -> None:
         '''change the position of the ball'''
-
-        if self.pos.y > settings.HEIGHT and not settings.INVISIBILITY:
-            self.kill()
 
         self.pos.x += self.speed * self.direction.x
         self.pos.y += self.speed * self.direction.y
@@ -39,31 +42,47 @@ class Ball(pygame.sprite.Sprite):
 
         self.collide(paddle, bricks, powerups)
 
-    def collide(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
-        """ bounce on walls and paddle, break bricks """
-        # walls
+    def collide(
+        self,
+        paddle,
+        bricks: pygame.sprite.Group,
+        powerups: pygame.sprite.Group
+    ) -> None:
+        """
+        bounce on walls, bricks and paddle.
+        Spawns the powerups and kill the bricks.
+        """
+
+        self.collide_with_walls()
+        self.collide_with_paddle(paddle=paddle)
+        self.collide_with_briks(bricks=bricks, powerups=powerups)
+
+    def collide_with_walls(self) -> None:
+        """ bounce on walls and ceiling """
         if self.rect.left < 0 or self.rect.right > settings.WIDTH :
             self.direction.x *= -1
-            # prevent a bug where you can push the ball into the wall
+            # prevent the ball from going out of bounce
             if self.rect.right > settings.WIDTH:
                 self.rect.right = settings.WIDTH
                 self.direction.x = -1
             elif self.rect.left < 0:
                 self.rect.left = 0
                 self.direction.x = 1
+        # ceiling
         if self.rect.top < 0:
             self.rect.top = 0
             self.direction.y = 1
+        # bounce on the bottom too IF cheats are enable in settings
+        # gameover is detected on gameplay.update
         if self.rect.bottom > settings.HEIGHT and settings.INVISIBILITY:
             self.direction.y = -1
             self.rect.bottom = settings.HEIGHT
 
-        # paddle
+    def collide_with_paddle(self, paddle) -> None:
+        """ bounce on paddle, calculate bounce angle """
         if self.rect.colliderect(paddle.rect):
-            # self.rect.bottom = paddle.rect.top
-
             # calculate angle
-            distance = self.rect.centerx - paddle.rect.centerx
+            distance = self.rect.x - paddle.rect.centerx
             normalized_distance = distance/(paddle.rect.width/2)
             bounce_angle = settings.MAX_BOUNCE_ANGLE * normalized_distance
             bounce_angle_in_radian = math.radians(bounce_angle)
@@ -71,39 +90,44 @@ class Ball(pygame.sprite.Sprite):
             self.direction.x = math.sin(bounce_angle_in_radian)
             self.direction.y = -math.cos(bounce_angle_in_radian)
 
-        # bricks
-        brick_list = bricks.sprites()
-        bricks_that_collide: list = self.rect.collidelistall(brick_list)
-        for brick_index in bricks_that_collide:
+
+    def collide_with_briks(
+        self,
+        bricks: list,
+        powerups: list,
+    ) -> None:
+        """ bounce, spawn powerups and kill bricks """
+        # use a separeted list cause dont modify and iter the same thing
+        bricks_to_break = []
+        for brick_index in self.rect.collidelistall(bricks):
             # spawn powerup
             r = random.randint(1, 100)
             if r <= settings.POWERUP_PADDLE_CHANCE:
-                powerups.add(PaddleGrowup(
+                powerups.append(PaddleGrowup(
                     game=self.game,
                     gameplay=self.gameplay,
-                    pos=brick_list[brick_index].rect.center
+                    pos=bricks[brick_index].rect.center
                 ))
             elif r >= (100-settings.POWERUP_BALL_CHANCE):
-                powerups.add(MultipleBalls(
+                powerups.append(MultipleBalls(
                     game=self.game,
                     gameplay=self.gameplay,
                     pos=self.rect.center
                 ))
 
-            bricks.remove(brick_list[brick_index])
-            self.gameplay.bricks_breaked += 1
 
             ### get the new direction ###
             # X axis
             if self.direction.x > 0:
-                delta_x = self.rect.right - brick_list[brick_index].rect.left
+                delta_x = self.rect.right - bricks[brick_index].rect.left
             else:
-                delta_x = brick_list[brick_index].rect.right - self.rect.left
+                delta_x = bricks[brick_index].rect.right - self.rect.left
             # Y axis
             if self.direction.y > 0:
-                delta_y = self.rect.bottom - brick_list[brick_index].rect.top
+                delta_y = self.rect.bottom - bricks[brick_index].rect.top
             else:
-                delta_y = brick_list[brick_index].rect.bottom - self.rect.top
+                delta_y = bricks[brick_index].rect.bottom - self.rect.top
+
             # check incoming direction
             if abs(delta_x - delta_y) < 10:   # corner (aproximation)
                 self.direction.x *= -1
@@ -113,9 +137,12 @@ class Ball(pygame.sprite.Sprite):
             else:                      # comming from the sides
                 self.direction.x *= -1
 
-        if len(bricks_that_collide) >= 2:
-            self.direction.y = 1
-            # force going down on double collison
+            bricks_to_break.append(bricks[brick_index])
+
+        # removes brick from the game
+        for brick in bricks_to_break:
+            bricks.remove(brick)
+            self.gameplay.bricks_breaked += 1
 
         self.direction.normalize_ip()
 
@@ -124,7 +151,7 @@ class Ball(pygame.sprite.Sprite):
         canvas.blit(self.image, self.rect)
 
 
-class Paddle(pygame.sprite.Sprite):
+class Paddle:
     """ move with keys, collide with walls and powerups """
     def __init__(self, game) -> None:
         super().__init__()
@@ -142,8 +169,10 @@ class Paddle(pygame.sprite.Sprite):
             x=(settings.WIDTH / 2) - (self.image.get_width() / 2),
             y=settings.HEIGHT - (settings.HEIGHT / 10)
         )  # center the paddle on x and 10% of height on y
+
         self.rect: pygame.Rect = self.image.get_rect()
-        self.rect.x, self.rect.y = int(self.pos.x), int(self.pos.y)
+        self.rect.centerx = int(self.pos.x)
+        self.rect.centery = int(self.pos.y)
 
     def update(self, powerups: pygame.sprite.Group) -> None:
         """ change the direction, move and collide """
@@ -179,7 +208,7 @@ class Paddle(pygame.sprite.Sprite):
         canvas.blit(self.image, self.rect)
 
 
-class Brick(pygame.sprite.Sprite):
+class Brick:
     """ brick constructor """
     def __init__(self, pos_x, pos_y) -> None:
         super().__init__()
@@ -191,16 +220,24 @@ class Brick(pygame.sprite.Sprite):
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
+    def update(self) -> None:
+        """
+        TODO:
+        change image
+        make a brick have multiple lifes
+        """
+
     def render(self, canvas) -> None:
         """ blit it's image to a surface """
         canvas.blit(self.image, self.rect)
 
 
-class Powerup(pygame.sprite.Sprite, ABC):
+class Powerup(ABC):
     '''abstract parent class'''
-    def __init__(self, game, pos: tuple) -> None:
+    def __init__(self, game, gameplay, pos: tuple) -> None:
         super().__init__()
         self.game = game
+        self.gameplay = gameplay
         self.active = False
         self.image: pygame.Surface = pygame.Surface(size=(16, 16))
         self.rect: pygame.Rect = pygame.Rect(pos[0], pos[1], 16, 16)
@@ -221,7 +258,7 @@ class Powerup(pygame.sprite.Sprite, ABC):
         if not self.active:
             self.rect.y += settings.POWERUP_SPEED
             if self.rect.top > settings.HEIGHT:
-                self.kill()
+                self.gameplay.powerups.remove(self)
 
     def render(self, canvas: pygame.Surface) -> None:
         """ blit it's image to a canvas """
@@ -231,7 +268,7 @@ class Powerup(pygame.sprite.Sprite, ABC):
 class PaddleGrowup(Powerup):
     """ Bonus that makes the paddle bigger """
     def __init__(self, game, gameplay, pos: tuple) -> None:
-        super().__init__(game, pos)
+        super().__init__(game, gameplay, pos)
         self.gameplay = gameplay
         self.image.fill('#00ffff')
         self.countdown_in_frames = settings.POWERUP_BIG_PADLLE_DURATION * settings.FPS
@@ -242,11 +279,11 @@ class PaddleGrowup(Powerup):
             self.countdown_in_frames -= 1
             if self.countdown_in_frames < 0:
                 self.unpowerup()
-                self.kill()
+                self.gameplay.powerups.remove(self)
         else:
             self.rect.y += settings.POWERUP_SPEED
             if self.rect.top > settings.HEIGHT:
-                self.kill()
+                self.gameplay.powerups.remove(self)
 
     def powerup(self) -> None:
         ''' add X% to the paddle size '''
@@ -287,23 +324,23 @@ class PaddleGrowup(Powerup):
 class MultipleBalls(Powerup):
     """ Bonus that spawns more balls """
     def __init__(self, game, gameplay, pos: tuple) -> None:
-        super().__init__(game, pos)
+        super().__init__(game, gameplay, pos)
         self.image.fill('#ffff00')
         self.gameplay = gameplay
 
     def powerup(self) -> None:
-        tmp_grp: pygame.sprite.Group = pygame.sprite.Group()
+        tmp_list = []
         # be carefull dont modify something you're iterating
         for ball in self.gameplay.balls:
             for _ in range(settings.BALL_MULTIPLYER):
-                if len(self.gameplay.balls.sprites()) >= settings.MAX_BALLS:
+                if len(self.gameplay.balls) >= settings.MAX_BALLS:
                     # linit exponential balls resulting in lag then crash
                     break
-                tmp_grp.add(Ball(
+                tmp_list.append(Ball(
                     game=self.game,
                     gameplay=self.gameplay,
                     pos=pygame.Vector2(ball.pos.x, ball.pos.y)))
-        for ball in tmp_grp:
-            self.gameplay.balls.add(ball)
+        for ball in tmp_list:
+            self.gameplay.balls.append(ball)
 
-        self.kill()
+        self.gameplay.powerups.remove(self)
