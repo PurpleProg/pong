@@ -39,29 +39,45 @@ class Ball(pygame.sprite.Sprite):
 
         self.collide(paddle, bricks, powerups)
 
-    def collide(self, paddle, bricks: pygame.sprite.Group, powerups: pygame.sprite.Group) -> None:
-        """ bounce on walls and paddle, break bricks """
-        # walls
+    def collide(
+        self,
+        paddle: pygame.sprite.Sprite,
+        bricks: pygame.sprite.Group,
+        powerups: pygame.sprite.Group
+    ) -> None:
+        """
+        bounce on walls, bricks and paddle.
+        Spawns the powerups and kill the bricks.
+        """
+
+        self.collide_with_walls()
+        self.collide_with_paddle(paddle=paddle)
+        self.collide_with_briks(bricks=bricks, powerups=powerups)
+
+    def collide_with_walls(self) -> None:
+        """ bounce on walls and ceiling """
         if self.rect.left < 0 or self.rect.right > settings.WIDTH :
             self.direction.x *= -1
-            # prevent a bug where you can push the ball into the wall
+            # prevent the ball from going out of bounce
             if self.rect.right > settings.WIDTH:
                 self.rect.right = settings.WIDTH
                 self.direction.x = -1
             elif self.rect.left < 0:
                 self.rect.left = 0
                 self.direction.x = 1
+        # ceiling
         if self.rect.top < 0:
             self.rect.top = 0
             self.direction.y = 1
+        # bounce on the bottom too IF cheats are enable in settings
+        # gameover is detected on gameplay.update
         if self.rect.bottom > settings.HEIGHT and settings.INVISIBILITY:
             self.direction.y = -1
             self.rect.bottom = settings.HEIGHT
 
-        # paddle
+    def collide_with_paddle(self, paddle: pygame.sprite.Sprite) -> None:
+        """ bounce on paddle, calculate bounce angle """
         if self.rect.colliderect(paddle.rect):
-            # self.rect.bottom = paddle.rect.top
-
             # calculate angle
             distance = self.rect.centerx - paddle.rect.centerx
             normalized_distance = distance/(paddle.rect.width/2)
@@ -71,7 +87,13 @@ class Ball(pygame.sprite.Sprite):
             self.direction.x = math.sin(bounce_angle_in_radian)
             self.direction.y = -math.cos(bounce_angle_in_radian)
 
-        # bricks
+
+    def collide_with_briks(
+        self,
+        bricks: pygame.sprite.Group,
+        powerups: pygame.sprite.Group,
+    ) -> None:
+        """ bounce, spawn powerups and kill bricks """
         brick_list = bricks.sprites()
         bricks_that_collide: list = self.rect.collidelistall(brick_list)
         for brick_index in bricks_that_collide:
@@ -104,6 +126,7 @@ class Ball(pygame.sprite.Sprite):
                 delta_y = self.rect.bottom - brick_list[brick_index].rect.top
             else:
                 delta_y = brick_list[brick_index].rect.bottom - self.rect.top
+
             # check incoming direction
             if abs(delta_x - delta_y) < 10:   # corner (aproximation)
                 self.direction.x *= -1
@@ -190,6 +213,13 @@ class Brick(pygame.sprite.Sprite):
         self.image.set_colorkey('#ffffff')
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
+
+    def update(self) -> None:
+        """
+        TODO:
+        change image
+        make a brick have multiple lifes
+        """
 
     def render(self, canvas) -> None:
         """ blit it's image to a surface """

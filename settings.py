@@ -15,7 +15,7 @@ FPS = 60
 WIDTH_BACKUP = WIDTH
 HEIGHT_BACKUP = HEIGHT
 
-COUNTDOWN = 1 # number of second before the gameplay start 
+COUNTDOWN = 1 # number of second before the gameplay start
 
 # BACKGROUND COLORS
 BACKGROUND_COLOR = Color('#000000')  # to replace with assets

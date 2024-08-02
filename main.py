@@ -17,13 +17,10 @@ class Game:
     """
     def __init__(self) -> None:
         pygame.init()
-
-        # font
         pygame.font.init()
-        self.font = pygame.font.Font(settings.FONT_NAME, settings.FONT_SIZE)
+        pygame.display.init()
 
         # init the display
-        pygame.display.init()
         self.display: pygame.Surface = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
         pygame.display.set_caption("Pong Game")
         self.fullscreen = False
@@ -33,6 +30,7 @@ class Game:
         states.Mainmenu(self)
 
         # init global game var
+        self.score: float = 0.0
         self.running: bool = True
         self.clock = pygame.time.Clock()
         self.keys: dict[str, bool] = {
@@ -50,22 +48,28 @@ class Game:
     def load_highscore(self) -> None:
         ''' attemp to load  the highscore file and store into self.highscore '''
         try:
-            with open('highscore', 'r') as highscore_file:
+            with open(file='highscore', mode='r', encoding='UTF-8') as highscore_file:
                 encoded_json: str = highscore_file.read()
                 decoded_json: str = base64.b64decode(encoded_json.encode()).decode()
                 self.highscore = json.loads(decoded_json)
         except FileNotFoundError:
             # if the file is not found, create it with hiscore 0
-            with open('highscore', 'w') as highscore:
+            with open(file='highscore', mode='w', encoding='UTF-8') as highscore:
                 self.highscore = {'manu': 0}
                 json_data = json.dumps(self.highscore)
-                encoded_data = base64.b64encode(json_data.encode())    # byte like objects
-                highscore.write(encoded_data.decode())   # decode method just convert it to string
+                encoded_data = base64.b64encode(json_data)    # byte like objects
+                highscore.write(encoded_data)   # decode method just convert it to string
 
     def main_loop(self) -> None:
-        self.event()
-        self.udpate()
-        self.render()
+        """
+        main game loop.
+        executed once each frame.
+        handle events, updates and rendering.
+        """
+        while self.running:
+            self.event()
+            self.udpate()
+            self.render()
 
     def event(self) -> None:
         '''get event like keyboard press or mouse input and gather them in a dict'''
@@ -107,8 +111,11 @@ class Game:
                             self.keys['LEFT'] = False
                         case pygame.K_p:
                             self.keys['p'] = False
-   
+
     def udpate(self) -> None:
+        """
+        update the last gamestate in the stack
+        """
         self.stack[-1].update()
 
     def render(self) -> None:
@@ -123,9 +130,7 @@ class Game:
 def main():
     ''' main entrypoint '''
     game = Game()
-
-    while game.running:
-        game.main_loop()
+    game.main_loop()
 
 
 if __name__ == "__main__":
