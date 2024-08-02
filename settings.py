@@ -5,7 +5,7 @@ from typing import NewType
 Color = NewType('Color', str)
 
 # cheats
-INVISIBILITY = False
+INVISIBILITY = True
 
 # screen
 WIDTH = 1024

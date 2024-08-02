@@ -161,7 +161,7 @@ class Paddle:
         ).convert()
         self.image.set_colorkey('#ff00ff')
         self.pos: pygame.Vector2 = pygame.Vector2(
-            x=(settings.WIDTH / 2) - (self.image.get_width() / 2),
+            x=settings.WIDTH / 2,
             y=settings.HEIGHT - (settings.HEIGHT / 10)
         )  # center the paddle on x and 10% of height on y
 
@@ -181,7 +181,7 @@ class Paddle:
 
         # move the paddle
         self.pos.x += self.speed * self.direction
-        self.rect.x = int(self.pos.x)
+        self.rect.centerx = int(self.pos.x)
 
         # collide powerups
         for powerup in powerups:
@@ -193,10 +193,10 @@ class Paddle:
         if self.rect.right > settings.WIDTH:
             self.rect.right = settings.WIDTH
             self.game.keys['RIGHT'] = False
-            self.pos.x = self.rect.x
+            self.pos.x = self.rect.centerx
         elif self.rect.left < 0:
             self.rect.left = 0
-            self.pos.x = self.rect.x
+            self.pos.x = self.rect.centerx
 
     def render(self, canvas: pygame.Surface) -> None:
         """ blit it's image to a surface """
@@ -293,8 +293,8 @@ class PaddleGrowup(Powerup):
         )
         # create a new rect
         paddle.rect = paddle.image.get_rect()
-        paddle.rect.x = int(paddle.pos.x)
-        paddle.rect.y = int(paddle.pos.y)
+        paddle.rect.centerx = int(paddle.pos.x)
+        paddle.rect.centery = int(paddle.pos.y)
 
         self.gameplay.paddle = paddle
 
@@ -310,8 +310,8 @@ class PaddleGrowup(Powerup):
         )
         # create new rect
         paddle.rect = paddle.image.get_rect()
-        paddle.rect.x = int(paddle.pos.x)
-        paddle.rect.y = int(paddle.pos.y)
+        paddle.rect.centerx = int(paddle.pos.x)
+        paddle.rect.centery = int(paddle.pos.y)
 
         self.gameplay.paddle = paddle
 
