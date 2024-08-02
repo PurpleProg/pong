@@ -90,23 +90,22 @@ class Ball:
             self.direction.x = math.sin(bounce_angle_in_radian)
             self.direction.y = -math.cos(bounce_angle_in_radian)
 
-
     def collide_with_briks(
         self,
         bricks: list,
         powerups: list,
     ) -> None:
         """ bounce, spawn powerups and kill bricks """
-        # use a separeted list cause dont modify and iter the same thing
-        bricks_to_break = []
-        for brick_index in self.rect.collidelistall(bricks):
+        colliding_bricks_index =  self.rect.collidelistall(bricks)
+
+        if colliding_bricks_index:
             # spawn powerup
             r = random.randint(1, 100)
             if r <= settings.POWERUP_PADDLE_CHANCE:
                 powerups.append(PaddleGrowup(
                     game=self.game,
                     gameplay=self.gameplay,
-                    pos=bricks[brick_index].rect.center
+                    pos=bricks[colliding_bricks_index[0]].rect.center
                 ))
             elif r >= (100-settings.POWERUP_BALL_CHANCE):
                 powerups.append(MultipleBalls(
@@ -115,20 +114,19 @@ class Ball:
                     pos=self.rect.center
                 ))
 
-
-            ### get the new direction ###
+            ### get the incoming direction ###
             # X axis
             if self.direction.x > 0:
-                delta_x = self.rect.right - bricks[brick_index].rect.left
+                delta_x = self.rect.right - bricks[colliding_bricks_index[0]].rect.left
             else:
-                delta_x = bricks[brick_index].rect.right - self.rect.left
+                delta_x = bricks[colliding_bricks_index[0]].rect.right - self.rect.left
             # Y axis
             if self.direction.y > 0:
-                delta_y = self.rect.bottom - bricks[brick_index].rect.top
+                delta_y = self.rect.bottom - bricks[colliding_bricks_index[0]].rect.top
             else:
-                delta_y = bricks[brick_index].rect.bottom - self.rect.top
+                delta_y = bricks[colliding_bricks_index[0]].rect.bottom - self.rect.top
 
-            # check incoming direction
+            #  change the direction
             if abs(delta_x - delta_y) < 10:   # corner (aproximation)
                 self.direction.x *= -1
                 self.direction.y *= -1
@@ -137,14 +135,11 @@ class Ball:
             else:                      # comming from the sides
                 self.direction.x *= -1
 
-            bricks_to_break.append(bricks[brick_index])
-
-        # removes brick from the game
-        for brick in bricks_to_break:
-            bricks.remove(brick)
+            # removes brick from the game
+            bricks.remove(bricks[colliding_bricks_index[0]])
             self.gameplay.bricks_breaked += 1
 
-        self.direction.normalize_ip()
+            self.direction.normalize_ip()
 
     def render(self, canvas: pygame.Surface) -> None:
         """ blit it's image to a surface """

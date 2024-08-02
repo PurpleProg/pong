@@ -18,10 +18,15 @@ the idea is to create a simple game but to focus on making it very well, with a 
 
 ### FIXES : 
 - [ ] powerups (separate action and the actual thing that falls off)
-- [ ] fix ball double brick collision
+- [x] fix ball double brick collision
 - [ ] fix ball sideways paddle collision
 - [x] brick auto spacing (already good but can be improved)
 - [x] makes labels updatable (fix score always zero)
+
+### settings :
+- [ ] bindings
+- [ ] game speed
+- [x] sound volume
 
 ### powerups :
 - [x] paddle size
@@ -57,9 +62,3 @@ the idea is to create a simple game but to focus on making it very well, with a 
 - [x] back to game button
 - [x] score
 - [x] quit to mainmenu
-
-### settings :
-- [ ] bindings
-- [ ] game speed
-- [x] sound volume
-
