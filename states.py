@@ -193,13 +193,16 @@ class Gameplay():
         self.countdown_in_frames = settings.COUNTDOWN*settings.FPS
 
         # create objects
+        self.paddle = Paddle(self.game)
         self.balls: list = []
         self.balls.append(Ball(
             game=self.game,
             gameplay=self,
-            pos=pygame.Vector2(settings.WIDTH//2, settings.HEIGHT - settings.HEIGHT//8)
+            pos=pygame.Vector2(
+                x=settings.WIDTH/2,
+                y=self.paddle.rect.top - self.paddle.rect.height/2 - 5
+                )
         ))
-        self.paddle = Paddle(self.game)
         self.powerups: list = []
 
         self.setup_bricks()

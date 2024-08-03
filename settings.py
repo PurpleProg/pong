@@ -5,12 +5,16 @@ from typing import NewType
 Color = NewType('Color', str)
 
 # cheats
-INVISIBILITY = True
+DEBUG = False
+INVISIBILITY = DEBUG
+SHOW_HITBOX = DEBUG   #  draw the rect
+SHOW_DIRECTIONS = DEBUG
 
 # screen
 WIDTH = 1024
 HEIGHT = 512
-FPS = 60
+
+FPS = 10 if DEBUG else 60
 
 WIDTH_BACKUP = WIDTH
 HEIGHT_BACKUP = HEIGHT
@@ -24,6 +28,8 @@ MAINMENU_BACKGROUND_COLOR = Color('#00ffff')
 GAMEOVER_BACKGROUND_COLOR = Color('#ff0000')
 WIN_BACKGROUND_COLOR = Color('#00ff00')
 SETTINGS_BACKGROUND_COLOR = Color('#00ffff')
+HITBOX_COLOR = Color('#ff0000')
+DIRECTION_COLOR = Color('#0000ff')
 
 # default font. There also is a bold and a mono variant.
 FONT_NAME = 'font/PixeloidSans.ttf'
@@ -45,9 +51,9 @@ POWERUP_SPEED = 2
 BALL_MULTIPLYER = 2  # for every ball spawn X more ball
 
 # percentages
-POWERUP_PADDLE_SIZE = 1.2
-POWERUP_PADDLE_CHANCE = 50
-POWERUP_BALL_CHANCE = 0
+POWERUP_PADDLE_SIZE = 1.5
+POWERUP_PADDLE_CHANCE = 5
+POWERUP_BALL_CHANCE = 5
 
 MAX_BOUNCE_ANGLE = 60
 

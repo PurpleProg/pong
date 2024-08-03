@@ -14,7 +14,9 @@ class Ball:
         self.game = game
         self.gameplay = gameplay
         self.speed: int = settings.BALL_SPEED
-        self.direction: pygame.Vector2 = pygame.Vector2(random.uniform(-1, 1), -1)
+        self.direction: pygame.Vector2 = pygame.Vector2(
+            x=random.uniform(-1, 1),
+            y=1)
 
         self.image: pygame.Surface = pygame.image.load(
             file='assets/Balls/Glass/Ball_Blue_Glass-32x32.png'
@@ -30,8 +32,8 @@ class Ball:
     def update(
         self,
         paddle,
-        bricks: pygame.sprite.Group,
-        powerups: pygame.sprite.Group
+        bricks: list,
+        powerups: list,
     ) -> None:
         '''change the position of the ball'''
 
@@ -45,8 +47,8 @@ class Ball:
     def collide(
         self,
         paddle,
-        bricks: pygame.sprite.Group,
-        powerups: pygame.sprite.Group
+        bricks: list,
+        powerups: list
     ) -> None:
         """
         bounce on walls, bricks and paddle.
@@ -82,7 +84,7 @@ class Ball:
         """ bounce on paddle, calculate bounce angle """
         if self.rect.colliderect(paddle.rect):
             # calculate angle
-            distance = self.rect.x - paddle.rect.centerx
+            distance = self.rect.centerx - paddle.rect.centerx
             normalized_distance = distance/(paddle.rect.width/2)
             bounce_angle = settings.MAX_BOUNCE_ANGLE * normalized_distance
             bounce_angle_in_radian = math.radians(bounce_angle)
@@ -144,6 +146,24 @@ class Ball:
     def render(self, canvas: pygame.Surface) -> None:
         """ blit it's image to a surface """
         canvas.blit(self.image, self.rect)
+        if settings.SHOW_HITBOX:
+            pygame.draw.rect(
+                surface=canvas,
+                color=settings.HITBOX_COLOR,
+                rect=self.rect,
+                width=1
+            )
+        if settings.SHOW_DIRECTIONS:
+            pygame.draw.line(
+                surface=canvas,
+                color=settings.DIRECTION_COLOR,
+                start_pos=self.rect.center,
+                end_pos=(
+                    self.rect.centerx + self.direction.x * self.speed * 10,
+                    self.rect.centery + self.direction.y * self.speed * 10
+                ),
+                width=2,
+            )
 
 
 class Paddle:
@@ -201,6 +221,24 @@ class Paddle:
     def render(self, canvas: pygame.Surface) -> None:
         """ blit it's image to a surface """
         canvas.blit(self.image, self.rect)
+        if settings.SHOW_HITBOX:
+            pygame.draw.rect(
+                surface=canvas,
+                color=settings.HITBOX_COLOR,
+                rect=self.rect,
+                width=1
+            )
+        if settings.SHOW_DIRECTIONS:
+            pygame.draw.line(
+                surface=canvas,
+                color=settings.DIRECTION_COLOR,
+                start_pos=self.rect.center,
+                end_pos=(
+                    self.rect.centerx + self.direction * self.speed * 20,
+                    self.rect.centery
+                ),
+                width=2,
+            )
 
 
 class Brick:
