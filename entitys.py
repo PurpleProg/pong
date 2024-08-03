@@ -282,38 +282,35 @@ class PaddleGrowup(Powerup):
 
     def powerup(self) -> None:
         ''' add X% to the paddle size '''
-        paddle = self.gameplay.paddle
 
-        # center it
-        paddle.pos.x -= paddle.rect.width * 0.1
+        if (self.gameplay.paddle.rect.width * settings.POWERUP_PADDLE_SIZE) > settings.WIDTH:
+            self.gameplay.powerups.remove(self)
+            return
+
         # strech the image
-        paddle.image = pygame.transform.scale(
-            surface=paddle.image,
-            size=(paddle.rect.width*settings.POWERUP_PADDLE_SIZE, paddle.rect.height)
+        self.gameplay.paddle.image = pygame.transform.scale(
+            surface=self.gameplay.paddle.image,
+            size=(self.gameplay.paddle.rect.width*settings.POWERUP_PADDLE_SIZE, self.gameplay.paddle.rect.height)
         )
         # create a new rect
-        paddle.rect = paddle.image.get_rect()
-        paddle.rect.centerx = int(paddle.pos.x)
-        paddle.rect.centery = int(paddle.pos.y)
-
-        self.gameplay.paddle = paddle
+        self.gameplay.paddle.rect = self.gameplay.paddle.image.get_rect()
+        # center it
+        self.gameplay.paddle.rect.centerx = int(self.gameplay.paddle.pos.x)
+        self.gameplay.paddle.rect.centery = int(self.gameplay.paddle.pos.y)
 
     def unpowerup(self) -> None:
         """ shrink the paddle """
-        paddle = self.gameplay.paddle
-        # center
-        paddle.pos.x += paddle.rect.width * 0.1
+
         # shrink the image
-        paddle.image = pygame.transform.scale(
-            surface=paddle.image,
-            size=(paddle.rect.width/settings.POWERUP_PADDLE_SIZE, paddle.rect.height)
+        self.gameplay.paddle.image = pygame.transform.scale(
+            surface=self.gameplay.paddle.image,
+            size=(self.gameplay.paddle.rect.width/settings.POWERUP_PADDLE_SIZE, self.gameplay.paddle.rect.height)
         )
         # create new rect
-        paddle.rect = paddle.image.get_rect()
-        paddle.rect.centerx = int(paddle.pos.x)
-        paddle.rect.centery = int(paddle.pos.y)
-
-        self.gameplay.paddle = paddle
+        self.gameplay.paddle.rect = self.gameplay.paddle.image.get_rect()
+        # center it
+        self.gameplay.paddle.rect.centerx = int(self.gameplay.paddle.pos.x)
+        self.gameplay.paddle.rect.centery = int(self.gameplay.paddle.pos.y)
 
 
 class MultipleBalls(Powerup):
