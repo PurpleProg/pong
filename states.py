@@ -528,15 +528,16 @@ class Pause(Menu):
             pos=(settings.WIDTH//2, settings.HEIGHT//10)
         ))  # settings
         self.labels.append(Menu.Label(
-            text=f'Highscore : {self.game.highscore}',
-            font=self.font,
-            pos=(100, 30),
-        ))  # highscore
-        self.labels.append(Menu.Label(
             text=f'score : {int(self.game.score)}',
             font=self.bold_font,
             pos=(settings.WIDTH//2, int(settings.HEIGHT*0.8))
         ))  # score : 999
+        if settings.DEBUG:
+            self.labels.append(Menu.Label(
+                text=f'Highscore : {self.game.highscore}',
+                font=self.font,
+                pos=(150, 30),
+            ))  # highscore
 
     def resume(self) -> None:
         """ after pause restart a counter """
