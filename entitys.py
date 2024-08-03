@@ -189,7 +189,7 @@ class Paddle:
         self.rect.centerx = int(self.pos.x)
         self.rect.centery = int(self.pos.y)
 
-    def update(self, powerups: pygame.sprite.Group) -> None:
+    def update(self, powerups: list) -> None:
         """ change the direction, move and collide """
         # update direction with arrows
         if self.game.keys['RIGHT']:
