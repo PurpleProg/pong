@@ -1,18 +1,14 @@
-"""
-main file of a breakout game
+""" main file of a breakout game
 Copyright me
 Licence GPL-3+
 """
 import sys
-import json
-import base64
 import pygame
 import states
 import settings
 
 class Game:
-    """
-    main class of breakout
+    """ main class of breakout
     contain some global game var (like display)
     """
     def __init__(self) -> None:
@@ -46,23 +42,16 @@ class Game:
         self.load_highscore()
 
     def load_highscore(self) -> None:
-        ''' attemp to load  the highscore file and store into self.highscore '''
+        """ attemp to load  the highscore file and store into self.highscore """
         try:
-            with open(file='highscore', mode='r', encoding='UTF-8') as highscore_file:
-                encoded_json: str = highscore_file.read()
-                decoded_json: str = base64.b64decode(encoded_json.encode()).decode()
-                self.highscore = json.loads(decoded_json)
+            self.highscore = settings.read_b64_json_file(file_name='highscore')
         except FileNotFoundError:
             # if the file is not found, create it with hiscore 0
-            with open(file='highscore', mode='w', encoding='UTF-8') as highscore:
-                self.highscore = {'manu': 0}
-                json_data = json.dumps(self.highscore)
-                encoded_data = base64.b64encode(json_data.encode())    # byte like objects
-                highscore.write(encoded_data.decode())   # decode method just convert byts to string
+            self.highscore = {'manu': 0,}
+            settings.write_encode_string(file_name='highscore', data=self.highscore)
 
     def main_loop(self) -> None:
-        """
-        main game loop.
+        """ main game loop.
         executed once each frame.
         handle events, updates and rendering.
         """
@@ -72,7 +61,7 @@ class Game:
             self.render()
 
     def event(self) -> None:
-        '''get event like keyboard press or mouse input and gather them in a dict'''
+        """get event like keyboard press or mouse input and gather them in a dict"""
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
@@ -113,13 +102,11 @@ class Game:
                             self.keys['p'] = False
 
     def udpate(self) -> None:
-        """
-        update the last gamestate in the stack
-        """
+        """ update the last gamestate in the stack """
         self.stack[-1].update()
 
     def render(self) -> None:
-        ''' render last state in stack, update screen and limit FPS.'''
+        """ render last state in stack, update screen and limit FPS."""
 
         self.stack[-1].render(self.display)
 
@@ -128,7 +115,7 @@ class Game:
 
 
 def main():
-    ''' main entrypoint '''
+    """ main entrypoint """
     game = Game()
     game.main_loop()
 

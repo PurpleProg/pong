@@ -1,4 +1,4 @@
-''' Define elements of the game, like a ball '''
+""" Define elements of the game, like a ball """
 import math  # for bounce angle calc
 import random
 from abc import abstractmethod, ABC
@@ -35,7 +35,7 @@ class Ball:
         bricks: list,
         powerups: list,
     ) -> None:
-        '''change the position of the ball'''
+        """change the position of the ball"""
 
         self.pos.x += self.speed * self.direction.x
         self.pos.y += self.speed * self.direction.y
@@ -50,8 +50,7 @@ class Ball:
         bricks: list,
         powerups: list
     ) -> None:
-        """
-        bounce on walls, bricks and paddle.
+        """ bounce on walls, bricks and paddle.
         Spawns the powerups and kill the bricks.
         """
 
@@ -98,9 +97,8 @@ class Ball:
         powerups: list,
     ) -> None:
         """ bounce, spawn powerups and kill bricks """
-        colliding_bricks_index =  self.rect.collidelistall(bricks)
 
-        if colliding_bricks_index:
+        if colliding_bricks_index := self.rect.collidelistall(bricks):
             # spawn powerup
             r = random.randint(1, 100)
             if r <= settings.POWERUP_PADDLE_CHANCE:
@@ -129,7 +127,7 @@ class Ball:
                 delta_y = bricks[colliding_bricks_index[0]].rect.bottom - self.rect.top
 
             #  change the direction
-            if abs(delta_x - delta_y) < 10:   # corner (aproximation)
+            if abs(delta_x - delta_y) < settings.APPROX_CORNER_COLLISION:   # corner (aproximation)
                 self.direction.x *= -1
                 self.direction.y *= -1
             elif delta_x > delta_y:   # comming from the top of the block
@@ -254,8 +252,7 @@ class Brick:
         self.rect.topleft = int(self.pos.x), int(self.pos.y)
 
     def update(self) -> None:
-        """
-        TODO:
+        """ TODO:
         change image
         make a brick have multiple lifes
         """
@@ -266,7 +263,7 @@ class Brick:
 
 
 class Powerup(ABC):
-    '''abstract parent class'''
+    """abstract parent class"""
     def __init__(self, game, gameplay, pos: tuple) -> None:
         super().__init__()
         self.game = game
@@ -276,7 +273,7 @@ class Powerup(ABC):
         self.rect: pygame.Rect = pygame.Rect(pos[0], pos[1], 16, 16)
 
     def activate(self) -> None:
-        '''make it invisible and apply the powerup'''
+        """make it invisible and apply the powerup"""
         self.image.set_alpha(0)
         self.rect.y = 0
         self.active = True
@@ -287,7 +284,7 @@ class Powerup(ABC):
         """ every powerup shall overwrite this method """
 
     def update(self) -> None:
-        ''' move the powerup down'''
+        """ move the powerup down"""
         if not self.active:
             self.rect.y += settings.POWERUP_SPEED
             if self.rect.top > settings.HEIGHT:
@@ -307,7 +304,7 @@ class PaddleGrowup(Powerup):
         self.countdown_in_frames = settings.POWERUP_BIG_PADLLE_DURATION * settings.FPS
 
     def update(self) -> None:
-        ''' overwrite for use a countdown '''
+        """ overwrite for use a countdown """
         if self.active:
             self.countdown_in_frames -= 1
             if self.countdown_in_frames < 0:
@@ -319,7 +316,7 @@ class PaddleGrowup(Powerup):
                 self.gameplay.powerups.remove(self)
 
     def powerup(self) -> None:
-        ''' add X% to the paddle size '''
+        """ add X% to the paddle size """
 
         if (self.gameplay.paddle.rect.width * settings.POWERUP_PADDLE_SIZE) > settings.WIDTH:
             self.gameplay.powerups.remove(self)
@@ -328,7 +325,10 @@ class PaddleGrowup(Powerup):
         # strech the image
         self.gameplay.paddle.image = pygame.transform.scale(
             surface=self.gameplay.paddle.image,
-            size=(self.gameplay.paddle.rect.width*settings.POWERUP_PADDLE_SIZE, self.gameplay.paddle.rect.height)
+            size=(
+                self.gameplay.paddle.rect.width*settings.POWERUP_PADDLE_SIZE,
+                self.gameplay.paddle.rect.height
+            )
         )
         # create a new rect
         self.gameplay.paddle.rect = self.gameplay.paddle.image.get_rect()
@@ -342,7 +342,10 @@ class PaddleGrowup(Powerup):
         # shrink the image
         self.gameplay.paddle.image = pygame.transform.scale(
             surface=self.gameplay.paddle.image,
-            size=(self.gameplay.paddle.rect.width/settings.POWERUP_PADDLE_SIZE, self.gameplay.paddle.rect.height)
+            size=(
+                self.gameplay.paddle.rect.width/settings.POWERUP_PADDLE_SIZE,
+                self.gameplay.paddle.rect.height
+            )
         )
         # create new rect
         self.gameplay.paddle.rect = self.gameplay.paddle.image.get_rect()

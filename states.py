@@ -1,8 +1,8 @@
-''' define game states and menus '''
+""" define game states and menus """
 import sys
 import json
 import base64
-from typing import Callable
+from collections.abc import Callable
 from abc import ABC
 import pygame
 from entitys import Ball, Paddle, Brick
@@ -10,7 +10,7 @@ import settings
 
 
 def save(score: float) -> None:
-    ''' save the highscore to file '''
+    """ save the highscore to file """
     score_data = {
         'manu': int(score)
     }
@@ -21,15 +21,13 @@ def save(score: float) -> None:
 
 
 class Menu(ABC):
-    ''' Parent class of all menus, handel buttons and labels rendering.
+    """ Parent class of all menus, handel buttons and labels rendering.
     The first button declared is the bottom one.
     Exactly one button shall be set selected.
-    The labels can be placed anywhere '''
+    The labels can be placed anywhere """
 
     class Label(pygame.sprite.Sprite):
-        """
-        text to put  anywhere on a menu
-        """
+        """ text to put  anywhere on a menu """
         def __init__(
             self,
             text: str,
@@ -42,9 +40,7 @@ class Menu(ABC):
             self.update(new_text=text)
 
         def update(self, new_text: str) -> None:
-            """
-            recreate a image from text and font
-            """
+            """ recreate a image from text and font """
             self.image: pygame.Surface = self.font.render(new_text, False, settings.FONT_COLOR)
             self.rect: pygame.Rect = self.image.get_rect()
             self.rect.center = self.pos
@@ -54,10 +50,8 @@ class Menu(ABC):
             canvas.blit(self.image, self.rect)
 
     class Button:
-        """
-        button to pass to the menu.
-        a method must be associated to each button.
-        """
+        """ button to pass to the menu.
+        a method must be associated to each button. """
         def __init__(
             self,
             text: str,
@@ -74,9 +68,7 @@ class Menu(ABC):
             self.rect: pygame.Rect = self.image.get_rect()
 
         def update(self) -> None:
-            """
-            add ">button<" arround the button if selected
-            """
+            """ add ">button<" arround the button if selected """
             if self.selected:
                 self.image = self.font.render(('>'+self.text+'<'), False, color=(50, 50, 50))
             else:
@@ -85,7 +77,7 @@ class Menu(ABC):
             self.rect = self.image.get_rect()
 
         def render(self, canvas: pygame.Surface, dest: tuple[int, int]) -> None:
-            """ i hate you pylint"""
+            """ i hate you pylint """
             canvas.blit(self.image, dest=dest)
 
     def __init__(
@@ -112,13 +104,11 @@ class Menu(ABC):
             self.background.set_alpha(150)   # 0 is fully transparent, 255 is fully opaque
 
     def go_back(self) -> None:
-        ''' just pop the stack '''
+        """ just pop the stack """
         self.game.stack.pop()
 
     def update(self) -> None:
-        """
-        move the selected/focus across buttons
-        """
+        """ move the selected/focus across buttons """
         for i, button in enumerate(self.buttons):
             if self.game.keys['UP'] and button.selected and i != len(self.buttons)-1:
                 self.game.keys['UP'] = False
@@ -142,10 +132,8 @@ class Menu(ABC):
                 # break
 
     def render(self, source_canvas: pygame.Surface) -> None:
-        """
-        blit buttons, labels and a background to the given surface
-        """
-        if self.is_transparent is True:
+        """ blit buttons, labels and a background to the given surface """
+        if self.is_transparent:
             canvas = self.game.stack[-2].canvas.copy()
         else:
             canvas = pygame.Surface(size=(settings.WIDTH, settings.HEIGHT))
@@ -172,8 +160,7 @@ class Menu(ABC):
 
 
 class Gameplay():
-    """
-    main part of the game.
+    """ main part of the game.
     is a state on the stack
     """
     def __init__(self, game) -> None:
@@ -208,8 +195,7 @@ class Gameplay():
         self.setup_bricks()
 
     def setup_bricks(self) -> None:
-        """
-        create the bricks and center them on the screen
+        """ create the bricks and center them on the screen
         can maybe implement levels by changing this method
         """
         self.bricks: list = []
@@ -241,9 +227,7 @@ class Gameplay():
                     ))
 
     def update(self) -> None:
-        """
-        update the balls, powerups and paddle
-        """
+        """ update the balls, powerups and paddle """
         # countdown befor start
         if self.countdown_in_frames:
             # countdown_in_seconds = self.countdown_in_frames/settings.FPS
@@ -300,9 +284,7 @@ class Gameplay():
 
 
 class Mainmenu(Menu):
-    """
-    this is the first state in the stack
-    """
+    """ this is the first state in the stack """
     def __init__(self, game) -> None:
         super().__init__(game, settings.MAINMENU_BACKGROUND_COLOR)
         self.game = game
@@ -364,8 +346,7 @@ class Mainmenu(Menu):
 
 
 class Gameover(Menu):
-    """
-    gameover state, is a Menu.
+    """ gameover state, is a Menu.
     save highscore to file if needed
     show score and highscore
     """
@@ -377,7 +358,8 @@ class Gameover(Menu):
         # save score
         if self.game.score > self.game.highscore['manu']:
             self.game.highscore['manu'] = self.game.score
-            save(self.game.score)
+            settings.write_encode_string(file_name='highscore', data=self.game.highscore)
+
 
         # create buttons
         self.buttons.append(Menu.Button(
@@ -407,7 +389,7 @@ class Gameover(Menu):
             pos=(settings.WIDTH//2, (settings.HEIGHT//16)*11)
         ))  # score : 99
         self.labels.append(Menu.Label(
-            text=f"highscore : {self.game.highscore['manu']}",
+            text=f"highscore : {int(self.game.highscore['manu'])}",
             font=self.bold_font,
             pos=(settings.WIDTH//2, (settings.HEIGHT//16)*13)
         ))  # highscore : 9999
@@ -427,8 +409,7 @@ class Gameover(Menu):
 
 
 class Win(Menu):
-    """
-    Win state,
+    """ Win state,
     ave the highscore to file if needed.
     show playtime, score and highscore
     """
@@ -440,7 +421,7 @@ class Win(Menu):
         # save score
         if self.game.score > self.game.highscore['manu']:
             self.game.highscore['manu'] = self.game.score
-            save(self.game.score)
+            settings.write_encode_string(file_name='highscore', data=self.game.highscore)
 
         # create buttons
         self.buttons.append(Menu.Button(
@@ -471,7 +452,7 @@ class Win(Menu):
                 pos=(settings.WIDTH//2, (settings.HEIGHT//16) * 11),
             ),  # score : 090
             Menu.Label(
-                text=f"highscore : {self.game.highscore['manu']}",
+                text=f"highscore : {int(self.game.highscore['manu'])}",
                 font=self.bold_font,
                 pos=(settings.WIDTH//2, (settings.HEIGHT//16) * 13),
             ),  # highscore
@@ -494,8 +475,7 @@ class Win(Menu):
 
 
 class Pause(Menu):
-    """
-    is a state of the scack,
+    """ is a state of the scack,
     is also transparent so you can see the last frame of the last state
     """
     def __init__(self, game, gameplay: Gameplay) -> None:
@@ -555,9 +535,7 @@ class Pause(Menu):
 
 
 class Settings(Menu):
-    """
-    settings menu, give acces to resolution, difficulties
-    """
+    """ settings menu, give acces to resolution, difficulties """
     def __init__(self, game) -> None:
         super().__init__(game, settings.SETTINGS_BACKGROUND_COLOR, is_transparent=False)
 
@@ -574,11 +552,6 @@ class Settings(Menu):
                 font=self.font,
             ),  # back
             Menu.Button(
-                text='save score to highscore file',
-                fonction=self.save_score,
-                font=self.font
-            ),  # save score
-            Menu.Button(
                 text='sound',
                 fonction=self.to_sound_settings,
                 font=self.font,
@@ -590,6 +563,15 @@ class Settings(Menu):
                 selected=True
             ),  # resolution
         ])
+
+        if settings.DEBUG:
+            self.buttons.append(
+                Menu.Button(
+                    text='save score to highscore file',
+                    fonction=self.save_score,
+                    font=self.font
+                ),  # save score
+            )
 
         for button in self.buttons:
             button.update()
@@ -610,8 +592,7 @@ class Settings(Menu):
         Resolution(self.game)
 
     def save_score(self) -> None:
-        """
-        force save score to highscore file.
+        """ force save score to highscore file.
         this is a debug feature.
         """
         save(score=self.game.score)
@@ -619,8 +600,7 @@ class Settings(Menu):
 
 
 class Difficulties(Menu):
-    """
-    select a difficulties.
+    """ select a difficulties.
     Change values in settingss
     """
     def __init__(self, game) -> None:
@@ -697,8 +677,7 @@ class Difficulties(Menu):
 
 
 class Resolution(Menu):
-    """
-    change settings.WIDTH and settings.HEIGHT.
+    """ change settings.WIDTH and settings.HEIGHT.
     Also toggle fullscreen
     """
     def __init__(self, game) -> None:
@@ -742,8 +721,7 @@ class Resolution(Menu):
         ))  # resolution title
 
     def toggle_fullscreen(self) -> None:
-        """
-        recreate the pygame display,
+        """ re-set the pygame display,
         update settings screen size
         and reload the stack
         """
@@ -761,8 +739,7 @@ class Resolution(Menu):
         self.reload_stack()
 
     def res_512x256(self) -> None:
-        """
-        recreate the pygame display at a given size
+        """ recreate the pygame display at a given size
         and update settings.WIDTH and settings.HEIGHT
         """
         self.game.display = pygame.display.set_mode(size=(512, 256))
@@ -770,8 +747,7 @@ class Resolution(Menu):
         self.reload_stack()
 
     def res_1024x512(self) -> None:
-        """
-        recreate the pygame display at a given size
+        """ recreate the pygame display at a given size
         and update settings.WIDTH and settings.HEIGHT
         """
         self.game.display = pygame.display.set_mode(size=(1024, 512))
@@ -779,7 +755,7 @@ class Resolution(Menu):
         self.reload_stack()
 
     def reload_stack(self) -> None:
-        ''' empty the stack and recreate every items '''
+        """ empty the stack and recreate every items """
         #  >mainmenu>settings>resolution
         self.game.stack.pop()
         self.game.stack.pop()
